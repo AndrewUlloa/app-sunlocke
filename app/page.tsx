@@ -20,7 +20,18 @@ export default function Home() {
             </code>
             .
           </li>
-          <li>Save and see your changes instantly. with moises and his dog</li>
+          <li className="mb-2 flex items-center gap-2">
+            Save and see your changes instantly. with moises and his dog
+            <Image
+              src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/6767168f745f6cfaac5bebcc_Screenshot%202024-12-21%20at%202.26.54%E2%80%AFPM%201.png"
+              alt="Moises's dog"
+              width={50}
+              height={50}
+              className="rounded-full"
+              priority
+            />
+          </li>
+          
         </ol>
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
