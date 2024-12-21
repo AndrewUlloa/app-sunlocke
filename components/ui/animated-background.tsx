@@ -39,10 +39,7 @@ export function AnimatedBackground() {
         {BLOB_COLORS.map((color, i) => (
           <div
             key={color}
-            className={`blob animate-blobMove${(i % 3) + 1}`}
-            style={{
-              background: `radial-gradient(circle, ${color}, transparent)`
-            }}
+            className={`blob animate-blobMove${(i % 3) + 1} bg-[radial-gradient(circle,_${color},_transparent)]`}
           />
         ))}
       </div>

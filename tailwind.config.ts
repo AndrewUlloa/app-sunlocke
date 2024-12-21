@@ -17,6 +17,26 @@ const config: Config = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+  		keyframes: {
+  			blobMove1: {
+  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
+  				'33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+  				'66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
+  			},
+  			blobMove2: {
+  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
+  				'33%': { transform: 'translate(-50px, 20px) scale(1.1)' },
+  				'66%': { transform: 'translate(20px, -30px) scale(0.9)' },
+  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
+  			},
+  			blobMove3: {
+  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
+  				'33%': { transform: 'translate(20px, 20px) scale(1.1)' },
+  				'66%': { transform: 'translate(-20px, -30px) scale(0.9)' },
+  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
+  			}
+  		},
   		animation: {
   			'blobMove1': 'blobMove1 25s infinite',
   			'blobMove2': 'blobMove2 30s infinite',

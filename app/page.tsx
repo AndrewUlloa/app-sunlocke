@@ -6,7 +6,7 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div className="animated-background">
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <div className="min-h-screen flex flex-col items-center justify-center p-2 relative">
         <div className="w-full max-w-[1200px] flex flex-col items-center">
           <div className="mb-4">
             <Image
