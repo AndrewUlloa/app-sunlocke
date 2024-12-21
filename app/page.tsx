@@ -2,7 +2,6 @@
 
 import { LoginForm } from "@/components/login-form";
 import Image from "next/image";
-import { useEffect } from "react";
 
 export default function Home() {
   return (
