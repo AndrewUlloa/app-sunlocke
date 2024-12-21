@@ -2,6 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .animated-background {
+    @apply fixed top-0 left-0 w-full h-full -z-20;
+    animation: backgroundFade 14s infinite alternate ease-in-out;
+  }
+
+  .blob-container {
+    @apply fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none;
+  }
+
+  .blob {
+    @apply absolute rounded-full opacity-100;
+    filter: blur(80px);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+}
+
+@keyframes backgroundFade {
+  0% {
+    background-color: #ce9cf4;
+  }
+  20% {
+    background-color: #efc9e9;
+  }
+  40% {
+    background-color: #faca97;
+  }
+  60% {
+    background-color: #fae59f;
+  }
+  80% {
+    background-color: #fae8ea;
+  }
+  100% {
+    background-color: #ff808e;
+  }
+}
+
+/* Preset blob animations */
+@keyframes blobMove1 {
+  0%,
+  100% {
+    transform: translate(-10vw, -10vh) scale(0.9);
+  }
+  50% {
+    transform: translate(110vw, 110vh) scale(1.6);
+  }
+}
+
+@keyframes blobMove2 {
+  0%,
+  100% {
+    transform: translate(110vw, -10vh) scale(1.6);
+  }
+  50% {
+    transform: translate(-10vw, 110vh) scale(0.9);
+  }
+}
+
+@keyframes blobMove3 {
+  0%,
+  100% {
+    transform: translate(50vw, -10vh) scale(1.2);
+  }
+  50% {
+    transform: translate(50vw, 110vh) scale(1.4);
+  }
+}
+
+/* Add more preset animations as needed */
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
