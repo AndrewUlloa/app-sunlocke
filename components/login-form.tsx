@@ -10,9 +10,9 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col", className)} {...props}>
       <Card className="overflow-hidden">
-        <CardContent className="flex flex-col items-center px-[120px] py-10 gap-5 border border-white bg-white/50 drop-shadow-red-card-default rounded-md">
+        <CardContent className="flex flex-col items-center border px-[40px] py-[20px] border-white bg-white/50 drop-shadow-red-card-default md:px-[120px] py-10 gap-5 rounded-md">
           <div className="flex flex-col items-center text-center ">
-            <h1 className="text-5xl font-eudoxusSansBold">Welcome back!</h1>
+            <h1 className="text-[28px] font-eudoxusSansBold md:text-5xl">Welcome back!</h1>
           </div>
           <Button variant="default" size="lg" className="flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
@@ -23,7 +23,7 @@ export function LoginForm({
             </svg>
             Continue with Google
           </Button>
-          <div className="relative ">
+          <div className="relative w-[250px] md:w-[400px]">
             <Image
               src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/674951b7115913dcaef9e527_Homepage_Spot_1_v2_1400.webp"
               alt="Two people having a conversation" 
@@ -33,7 +33,7 @@ export function LoginForm({
               priority
             />
           </div>
-          <div className="max-w-[400px] text-balance text-center font-eudoxusSansMedium text-base text-black ">
+          <div className="max-w-[275px] text-[12px] text-pretty text-center font-eudoxusSansMedium text-black md: text-base max-w-[400px]">
             By clicking Continue with Google, you agree to our <a href="https://www.sunlocke.com/en-us/terms" className="underline underline-offset-4 hover:text-neutral-900">Terms of Service</a> and <a href="https://www.sunlocke.com/en-us/privacy-policy" className="underline underline-offset-4 hover:text-neutral-900">Privacy Policy</a>.
           </div>
         </CardContent>
