@@ -23,7 +23,7 @@ export function LoginForm({
             </svg>
             Continue with Google
           </Button>
-          <div className="relative hidden md:block ">
+          <div className="relative ">
             <Image
               src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/674951b7115913dcaef9e527_Homepage_Spot_1_v2_1400.webp"
               alt="Two people having a conversation" 
