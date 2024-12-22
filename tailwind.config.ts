@@ -1,13 +1,16 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-    content: [
+  content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-  	extend: {
+    extend: {
+      letterSpacing: {
+        DEFAULT: '0.125em'
+      },
       fontFamily: {
         'tobiasLight': ['var(--font-tobias-light)'],
         'tobiasRegular': ['var(--font-tobias-regular)'],
@@ -19,51 +22,56 @@ const config: Config = {
         'geistSans': ['var(--font-geist-sans)'],
         'geistMono': ['var(--font-geist-mono)'],
       },
-  		colors: {
-  			background: 'var(--background)',
-  			foreground: 'var(--foreground)'
-  		},
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		},
-  		keyframes: {
-  			blobMove1: {
-  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
-  				'33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-  				'66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
-  			},
-  			blobMove2: {
-  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
-  				'33%': { transform: 'translate(-50px, 20px) scale(1.1)' },
-  				'66%': { transform: 'translate(20px, -30px) scale(0.9)' },
-  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
-  			},
-  			blobMove3: {
-  				'0%': { transform: 'translate(0px, 0px) scale(1)' },
-  				'33%': { transform: 'translate(20px, 20px) scale(1.1)' },
-  				'66%': { transform: 'translate(-20px, -30px) scale(0.9)' },
-  				'100%': { transform: 'translate(0px, 0px) scale(1)' }
-  			},
-        backgroundFade: {
-          '0%, 100%': { backgroundColor: '#f8f8ff' },  // Start/end color
-          '50%': { backgroundColor: '#f0f0ff' },       // Middle color
+      colors: {
+        background: 'var(--background)',
+        foreground: 'var(--foreground)'
+      },
+      borderRadius: {
+        lg: '40px',
+        md: '20px',
+        sm: '12px'
+      },
+      keyframes: {
+        blobMove1: {
+          '0%, 100%': { transform: 'translate(-10vw, -10vh) scale(0.9)' },
+          '50%': { transform: 'translate(110vw, 110vh) scale(1.6)' }
         },
-  		},
-  		animation: {
-  			'blobMove1': 'blobMove1 25s infinite',
-  			'blobMove2': 'blobMove2 30s infinite',
-  			'blobMove3': 'blobMove3 35s infinite',
-        'background-fade': 'backgroundFade 15s ease infinite',
-  		},
+        blobMove2: {
+          '0%, 100%': { transform: 'translate(110vw, -10vh) scale(1.6)' },
+          '50%': { transform: 'translate(-10vw, 110vh) scale(0.9)' }
+        },
+        blobMove3: {
+          '0%, 100%': { transform: 'translate(50vw, -10vh) scale(1.2)' },
+          '50%': { transform: 'translate(50vw, 110vh) scale(1.4)' }
+        },
+        backgroundFade: {
+          '0%': { backgroundColor: '#ce9cf4' },
+          '20%': { backgroundColor: '#efc9e9' },
+          '40%': { backgroundColor: '#faca97' },
+          '60%': { backgroundColor: '#fae59f' },
+          '80%': { backgroundColor: '#fae8ea' },
+          '100%': { backgroundColor: '#ff808e' }
+        }
+      },
+      animation: {
+        'blobMove1': 'blobMove1 20s infinite alternate ease-in-out',
+        'blobMove2': 'blobMove2 25s infinite alternate ease-in-out', 
+        'blobMove3': 'blobMove3 30s infinite alternate ease-in-out',
+        'background-fade': 'backgroundFade 14s infinite alternate ease-in-out'
+      },
       zIndex: {
         'far-behind': '-2',
         'behind': '-1',
+      },
+      dropShadow: {
+        'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)']
+      },
+      boxShadow: {
+        'button-inner': '0 0.5px 4px rgba(212, 212, 212, 1)'
       }
-  	}
+    }
   },
-  plugins: [],
+  plugins: []
 };
+
 export default config;

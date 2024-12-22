@@ -19,8 +19,7 @@ export default function Home() {
   return (
     <AnimatedBackground>
       <div className="min-h-screen flex flex-col items-center justify-center p-2 relative">
-        <div className="w-full max-w-[1200px] flex flex-col items-center">
-          <div className="mb-4">
+      <div className="mb-4">
             <Image
               src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/676724d7148175f658d6927b_Sun_Locke_XL.svg"
               alt="Sun Locke Logo"
@@ -29,7 +28,7 @@ export default function Home() {
               priority
             />
           </div>
-          
+        <div className="w-full max-w-[1200px] flex flex-col items-center">
           <LoginForm />
         </div>
       </div>
