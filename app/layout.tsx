@@ -41,6 +41,27 @@ const tobiasSemiBold = localFont({
   variable: "--font-tobias-semibold",
 });
 
+// EudoxusSans-Regular.woff
+const eudoxusSansRegular = localFont({
+  src: "./fonts/EudoxusSans-Regular.woff",
+  display: "swap",
+  variable: "--font-eudoxus-sans-regular",
+});
+
+// EudoxusSans-Medium.woff
+const eudoxusSansMedium = localFont({
+  src: "./fonts/EudoxusSans-Medium.woff",
+  display: "swap",
+  variable: "--font-eudoxus-sans-medium",
+});
+
+// EudoxusSans-Bold.woff
+const eudoxusSansBold = localFont({
+  src: "./fonts/EudoxusSans-Bold.woff",
+  display: "swap",
+  variable: "--font-eudoxus-sans-bold",
+});
+
 export const metadata: Metadata = {
   title: "Sun Locke",
   description: "Sun Locke",
@@ -54,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-          className={`${tobiasLight.variable} ${tobiasRegular.variable} ${tobiasMedium.variable} ${tobiasSemiBold.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${tobiasLight.variable} ${tobiasRegular.variable} ${tobiasMedium.variable} ${tobiasSemiBold.variable} ${eudoxusSansRegular.variable} ${eudoxusSansMedium.variable} ${eudoxusSansBold.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
 
       >
         {children}

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
 import Image from "next/image";
-
+import { AnimatedBackground } from "@/components/ui/animated-background";
 export const metadata: Metadata = {
   openGraph: {
     images: [
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="animated-background">
+    <AnimatedBackground>
       <div className="min-h-screen flex flex-col items-center justify-center p-2 relative">
         <div className="w-full max-w-[1200px] flex flex-col items-center">
           <div className="mb-4">
@@ -33,6 +33,6 @@ export default function Home() {
           <LoginForm />
         </div>
       </div>
-    </div>
+    </AnimatedBackground>
   );
 }
