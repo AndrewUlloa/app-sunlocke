@@ -27,17 +27,18 @@ export function AnimatedBackground({ children }: AnimatedBackgroundProps) {
 
     blobs.forEach((blob, i) => {
       const isMobile = window.innerWidth <= 768;
-      const size = isMobile ? randInt(30, 50) : randInt(40, 60);
+      const size = isMobile ? randInt(15, 30) : randInt(40, 60);
       const element = blob as HTMLElement;
 
-      element.style.width = `${size}vw`;
-      element.style.height = `${size}vw`;
+      const sizeUnit = isMobile ? 'vh' : 'vw';
+      element.style.width = `${size}${sizeUnit}`;
+      element.style.height = `${size}${sizeUnit}`;
       element.style.background = `radial-gradient(circle, ${COLORS[i]}, transparent)`;
 
       const keyframeSteps = Array.from({ length: 6 }, () => ({
-        x: randInt(-20, 120),
-        y: randInt(-20, 120),
-        scale: rand(0.9, 1.6),
+        x: isMobile ? randInt(-10, 100) : randInt(-20, 120),
+        y: isMobile ? randInt(-10, 100) : randInt(-20, 120),
+        scale: isMobile ? rand(0.8, 1.3) : rand(0.9, 1.6),
       }));
 
       const animationName = `moveGrow${i}`;
@@ -85,7 +86,7 @@ export function AnimatedBackground({ children }: AnimatedBackgroundProps) {
         {COLORS.map((color, i) => (
           <div
             key={i}
-            className="blob absolute rounded-full blur-[80px] md:blur-[30px]"
+            className="blob absolute rounded-full blur-[40px] md:blur-[80px]"
           />
         ))}
       </div>
