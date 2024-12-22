@@ -11,7 +11,7 @@ export function LoginForm({
     <div className={cn("flex flex-col", className)} {...props}>
       <Card className="overflow-hidden">
         <CardContent className="flex flex-col items-center px-[120px] py-10 gap-5 border border-white bg-white/50 drop-shadow-red-card-default rounded-md">
-          <div className="flex flex-col items-center text-center border border-black">
+          <div className="flex flex-col items-center text-center ">
             <h1 className="text-5xl font-eudoxusSansBold">Welcome back!</h1>
           </div>
           <Button variant="default" size="lg" className="flex items-center justify-center">
@@ -23,7 +23,7 @@ export function LoginForm({
             </svg>
             Continue with Google
           </Button>
-          <div className="relative hidden md:block border border-black">
+          <div className="relative hidden md:block ">
             <Image
               src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/674951b7115913dcaef9e527_Homepage_Spot_1_v2_1400.webp"
               alt="Two people having a conversation" 
@@ -33,7 +33,7 @@ export function LoginForm({
               priority
             />
           </div>
-          <div className="max-w-[400px] text-balance text-center font-eudoxusSansMedium text-base text-black border border-black">
+          <div className="max-w-[400px] text-balance text-center font-eudoxusSansMedium text-base text-black ">
             By clicking Continue with Google, you agree to our <a href="https://www.sunlocke.com/en-us/terms" className="underline underline-offset-4 hover:text-neutral-900">Terms of Service</a> and <a href="https://www.sunlocke.com/en-us/privacy-policy" className="underline underline-offset-4 hover:text-neutral-900">Privacy Policy</a>.
           </div>
         </CardContent>
