@@ -18,17 +18,17 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <AnimatedBackground>
-      <div className="min-h-screen flex flex-col items-center justify-between relative ">
-      <div className="fixed top-0 m-5">
-            <Image
-              src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/676724d7148175f658d6927b_Sun_Locke_XL.svg"
-              alt="Sun Locke Logo"
-              width={144}
-              height={32}
-              priority
-            />
-          </div>
-        <div className="h-screen flex flex-col items-center justify-center">
+      <div className="min-h-[100dvh] w-full flex flex-col items-center relative">
+        <div className="absolute top-0 m-5">
+          <Image
+            src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/676724d7148175f658d6927b_Sun_Locke_XL.svg"
+            alt="Sun Locke Logo"
+            width={144}
+            height={32}
+            priority
+          />
+        </div>
+        <div className="flex-1 w-full flex items-center justify-center">
           <LoginForm />
         </div>
       </div>

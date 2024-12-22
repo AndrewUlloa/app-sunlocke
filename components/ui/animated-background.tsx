@@ -36,9 +36,9 @@ export function AnimatedBackground({ children }: AnimatedBackgroundProps) {
       element.style.background = `radial-gradient(circle, ${COLORS[i]}, transparent)`;
 
       const keyframeSteps = Array.from({ length: 6 }, () => ({
-        x: isMobile ? randInt(-10, 100) : randInt(-20, 120),
-        y: isMobile ? randInt(-10, 100) : randInt(-20, 120),
-        scale: isMobile ? rand(0.8, 1.3) : rand(0.9, 1.6),
+        x: isMobile ? randInt(0, 90) : randInt(-20, 120),
+        y: isMobile ? randInt(0, 90) : randInt(-20, 120),
+        scale: isMobile ? rand(0.8, 1.1) : rand(0.9, 1.6),
       }));
 
       const animationName = `moveGrow${i}`;
@@ -70,19 +70,10 @@ export function AnimatedBackground({ children }: AnimatedBackgroundProps) {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full">
-      {/* 
-        The background color fade:
-        - uses our custom animation: animate-background-fade
-        - with a negative z-index behind content
-      */}
+    <div className="relative min-h-[100dvh] w-full overflow-hidden">
       <div className="fixed inset-0 z-far-behind animate-background-fade opacity-80" />
 
-      {/* 
-        Blob container:
-        - Another negative z-index so it's behind your main content 
-      */}
-      <div className="fixed inset-0 overflow-hidden z-behind pointer-events-none">
+      <div className="fixed inset-0 z-behind pointer-events-none">
         {COLORS.map((color, i) => (
           <div
             key={i}
@@ -91,7 +82,6 @@ export function AnimatedBackground({ children }: AnimatedBackgroundProps) {
         ))}
       </div>
 
-      {/* Main content on top */}
       <div className="relative z-0">{children}</div>
     </div>
   );
