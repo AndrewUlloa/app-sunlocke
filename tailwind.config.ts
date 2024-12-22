@@ -8,6 +8,14 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        'tobiasLight': ['var(--font-tobias-light)'],
+        'tobiasRegular': ['var(--font-tobias-regular)'],
+        'tobiasMedium': ['var(--font-tobias-medium)'],
+        'tobiasSemiBold': ['var(--font-tobias-semibold)'],
+        'geistSans': ['var(--font-geist-sans)'],
+        'geistMono': ['var(--font-geist-mono)'],
+      },
   		colors: {
   			background: 'var(--background)',
   			foreground: 'var(--foreground)'
