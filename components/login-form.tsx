@@ -9,8 +9,14 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col", className)} {...props}>
-      <Card className="overflow-hidden">
-        <CardContent className="flex flex-col items-center gap-3 rounded-sm border border-white bg-white/50 px-[40px] py-[20px] drop-shadow-red-card-default md:px-[120px] md:py-[40px] md:gap-5 md:rounded-md">
+      <Card className="bg-transparent shadow-red-card-default hover:shadow-red-card-hover transition ease-in-out duration-200">
+        <CardContent className={cn(
+          "flex flex-col items-center gap-5",
+          "border border-white bg-white/50",
+          "px-[40px] py-[20px]",
+          "md:px-[120px] md:py-[40px] md:gap-5",
+          "rounded-xl"
+        )}>
           <div className="flex flex-col items-center text-center ">
             <h1 className="text-[28px] font-eudoxusSansBold md:text-5xl">Welcome back!</h1>
           </div>

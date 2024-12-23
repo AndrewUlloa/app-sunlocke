@@ -63,11 +63,10 @@ const config: Config = {
         'far-behind': '-2',
         'behind': '-1',
       },
-      dropShadow: {
-        'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)']
-      },
       boxShadow: {
-        'button-inner': '0 0.5px 4px rgba(212, 212, 212, 1)'
+        'button-inner': '0 0.5px 4px rgba(212, 212, 212, 1)',
+        'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)'],
+        'red-card-hover': ['0 4px 16px rgba(220, 68, 53, 0.75)']
       }
     }
   },
