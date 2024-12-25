@@ -19,15 +19,17 @@ export default function Home() {
   return (
     <AnimatedBackground>
       <div className="min-h-[100dvh] w-full flex flex-col items-center relative">
-        <div className="absolute top-0 m-5">
+        <a href="https://www.sunlocke.com" className="absolute top-0 m-5 flex items-center gap-[3px]">
           <Image
-            src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/676724d7148175f658d6927b_Sun_Locke_XL.svg"
+            src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/676c5d394fac452876183d99_Sun_Locke_Logo-Black.svg"
             alt="Sun Locke Logo"
-            width={144}
-            height={32}
+            width={36}
+            height={36}
             priority
+            unoptimized
           />
-        </div>
+          <span className="text-[28px] font-tobiasSemiBold tracking-[-0.04em]">Sun Locke</span>
+        </a>
         <div className="flex-1 w-full flex items-center justify-center">
           <LoginForm />
         </div>
