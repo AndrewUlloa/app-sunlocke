@@ -66,7 +66,16 @@ const config: Config = {
       boxShadow: {
         'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)'],
         'red-card-hover': ['0 4px 16px rgba(220, 68, 53, 0.75)'],
-        'button-inner': 'inset 0 0.5px 4px rgba(212, 212, 212, 1)'
+        'button-inner': 'inset 0 0.5px 4px rgba(212, 212, 212, 1)',
+        'button-outer': [
+          '0px 2px 4px 0px rgba(255, 255, 255, 0.5)',
+          '0px 2px 4px 0px rgba(255, 255, 255, 0.5)',
+          '0px 1px 3px 0px rgba(255, 255, 255, 0.7)',
+          '0px 0px 12px 0px rgba(255, 255, 255, 0.9)',
+          '0px 8px 12px 0px rgba(253, 242, 133, 0.7)',
+          '0px 6px 10px 0px rgba(156, 180, 0, 0.5)',
+          '0px 7px 11px 0px rgba(252, 237, 81, 0.6)',
+        ]
       }
     }
   },
