@@ -37,10 +37,10 @@ const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px
       link: "",
     },
     size: {
-      default: "h-14 px-4 py-2",
+      default: "px-6 py-2",
       sm: "h-9 px-3",
       md: "px-[22px] py-[7px]",
-      lg: "px-[24px] py-[12px]",
+      lg: "px-[8px] py-[8px]",
       icon: "h-10 w-10",
     },
   },
