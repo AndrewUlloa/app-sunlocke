@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white/70 text-black border-[0.5px] border-white ring-1 ring-inset ring-[#F9F9F8] drop-shadow-button-inner",
+        default: "bg-white/70 text-black stroke-white stroke-[0.5px] ring-1 ring-inset ring-[#F9F9F8]",
         destructive:
           "bg-red-500 text-neutral-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
         outline:
@@ -19,20 +19,36 @@ const buttonVariants = cva(
         ghost: "hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
         link: "text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50",
       },
-      size: {
-        default: "h-14 px-4 py-2",
-        sm: "h-9 px-3",
-        md: "px-[22px] py-[7px]",
-        lg: "px-[24px] py-[8px]",
-        icon: "h-10 w-10",
-      },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
     },
   }
 )
+
+const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px]", {
+  variants: {
+    variant: {
+      default: "shadow-button-inner stroke-[#F9F9F8] stroke-[0.5px]",
+      destructive: "drop-shadow-none",
+      outline: "drop-shadow-none",
+      secondary: "drop-shadow-none",
+      ghost: "",
+      link: "",
+    },
+    size: {
+      default: "h-14 px-4 py-2",
+      sm: "h-9 px-3",
+      md: "px-[22px] py-[7px]",
+      lg: "px-[24px] py-[12px]",
+      icon: "h-10 w-10",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+    size: "default",
+  },
+})
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -41,14 +57,20 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, className }))}
         ref={ref}
         {...props}
-      />
+      >
+        <div className={cn(buttonInnerVariants({ variant, size }))}>
+          <div className="flex items-center gap-2">
+            {children}
+          </div>
+        </div>
+      </Comp>
     )
   }
 )

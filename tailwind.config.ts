@@ -64,9 +64,9 @@ const config: Config = {
         'behind': '-1',
       },
       boxShadow: {
-        'button-inner': '0 0.5px 4px rgba(212, 212, 212, 1)',
         'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)'],
-        'red-card-hover': ['0 4px 16px rgba(220, 68, 53, 0.75)']
+        'red-card-hover': ['0 4px 16px rgba(220, 68, 53, 0.75)'],
+        'button-inner': 'inset 0 0.5px 4px rgba(212, 212, 212, 1)'
       }
     }
   },
