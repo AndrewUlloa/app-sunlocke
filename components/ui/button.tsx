@@ -52,7 +52,8 @@ const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+    VariantProps<typeof buttonVariants>,
+    VariantProps<typeof buttonInnerVariants> {
   asChild?: boolean
 }
 
