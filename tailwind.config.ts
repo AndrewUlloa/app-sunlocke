@@ -77,13 +77,13 @@ const config: Config = {
           '0px 7px 11px 0px rgba(252, 237, 81, 0.6)',
         ],
         'button-outer-hover': [
-          '0px 2px 4px 0px rgba(255, 255, 255, 0.5)',
-          '0px 2px 4px 0px rgba(255, 255, 255, 0.5)',
-          '0px 1px 3px 0px rgba(255, 255, 255, 0.7)',
-          '0px 0px 12px 0px rgba(255, 255, 255, 0.9)',
-          '0px 8px 12px 0px rgba(253, 242, 133, 0.7)',
-          '0px 6px 10px 0px rgba(156, 180, 0, 0.5)',
-          '0px 7px 11px 0px rgba(252, 237, 81, 0.6)',
+          '0px 4px 8px 0px rgba(255, 255, 255, 0.5)',
+          '0px 3px 6px 0px rgba(255, 255, 255, 0.7)',
+          '0px 1px 2px 0px rgba(255, 255, 255, 0.9)',
+          '0px 0px 24px 0px rgba(255, 255, 255, 0.8)',
+          '0px 12px 24px 0px rgba(253, 242, 133, 0.7)',
+          '0px 10px 20px 0px rgba(156, 180, 0, 0.6)',
+          '0px 8px 16px 0px rgba(252, 237, 81, 0.5)',
         ]
       }
     }
