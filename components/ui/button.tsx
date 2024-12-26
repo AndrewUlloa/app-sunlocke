@@ -9,7 +9,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-black stroke-white stroke-[0.5px] ring-1 ring-inset ring-[#F9F9F8] shadow-button-outer transition-shadow ease-in-out duration-[375ms] hover:shadow-button-outer-hover",
+        default: [
+          "bg-white text-black stroke-white stroke-[0.5px] ring-1 ring-inset ring-[#F9F9F8]",
+          "shadow-button-outer",
+          "transition-all duration-200 ease-out",
+          "hover:shadow-button-outer-hover hover:duration-[375ms]",
+          "active:shadow-button-outer-press active:scale-[0.98] active:duration-200",
+        ].join(" "),
         destructive:
           "bg-red-500 text-neutral-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
         outline:
