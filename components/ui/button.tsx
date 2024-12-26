@@ -5,7 +5,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px] text-base font-eudoxusSansMedium select-none ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 w-fit",
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px]",
+    "text-base font-eudoxusSansMedium select-none",
+    "ring-offset-white transition-colors",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "[&_*]:select-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+    "dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 w-fit"
+  ].join(" "),
   {
     variants: {
       variant: {
@@ -32,26 +40,29 @@ const buttonVariants = cva(
   }
 )
 
-const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px] select-none", {
-  variants: {
-    variant: {
-      default: "shadow-button-inner stroke-[#F9F9F8] stroke-[0.5px]",
-      destructive: "drop-shadow-none",
-      outline: "drop-shadow-none",
-      secondary: "drop-shadow-none",
-      ghost: "",
-      link: "",
+const buttonInnerVariants = cva(
+  "flex items-center justify-center rounded-[100px]",
+  {
+    variants: {
+      variant: {
+        default: "shadow-button-inner stroke-[#F9F9F8] stroke-[0.5px]",
+        destructive: "drop-shadow-none",
+        outline: "drop-shadow-none",
+        secondary: "drop-shadow-none",
+        ghost: "",
+        link: "",
+      },
+      size: {
+        default: "gap-[6px] px-[16px] py-[6px] text-[14px] sm:gap-2 sm:px-[24px] sm:py-[8px] sm:text-base",
+        icon: "h-10 w-10",
+      },
     },
-    size: {
-      default: "gap-[6px] px-[16px] py-[6px] text-[14px] sm:gap-2 sm:px-[24px] sm:py-[8px] sm:text-base",
-      icon: "h-10 w-10",
+    defaultVariants: {
+      variant: "default",
+      size: "default",
     },
-  },
-  defaultVariants: {
-    variant: "default",
-    size: "default",
-  },
-})
+  }
+)
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
