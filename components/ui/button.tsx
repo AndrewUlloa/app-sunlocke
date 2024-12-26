@@ -19,10 +19,10 @@ const buttonVariants = cva(
       variant: {
         default: [
           "bg-white text-black stroke-white stroke-[0.5px] ring-1 ring-inset ring-[#F9F9F8]",
-          "shadow-button-outer",
+          "shadow-button-outer_default",
           "transition-all duration-200 ease-out",
-          "hover:shadow-button-outer-hover hover:duration-[375ms]",
-          "active:shadow-button-outer-press active:scale-[0.99] active:duration-100",
+          "hover:shadow-button-outer-hover_default hover:duration-[375ms]",
+          "active:shadow-button-outer-press_default active:scale-[0.99] active:duration-100 lg:shadow-button-outer_default-lg lg:hover:shadow-button-outer-hover_default-lg lg:active:shadow-button-outer-press_default-lg",
         ].join(" "),
         destructive:
           "bg-red-500 text-neutral-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
