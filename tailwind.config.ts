@@ -81,9 +81,9 @@ const config: Config = {
           '0px 3px 6px 0px rgba(255, 255, 255, 0.7)',
           '0px 1px 2px 0px rgba(255, 255, 255, 0.9)',
           '0px 0px 24px 0px rgba(255, 255, 255, 0.8)',
-          '0px 12px 24px 0px rgba(253, 242, 133, 0.7)',
-          '0px 10px 20px 0px rgba(156, 180, 0, 0.6)',
-          '0px 8px 16px 0px rgba(252, 237, 81, 0.5)',
+          '0px 12px 24px 0px rgba(252, 242, 133, 0.7)',
+          '0px 8px 16px 0px rgba(252, 237, 81, 0.6)',
+          '0px 10px 20px 0px rgba(156, 180, 0, 0.5)',
         ],
         'button-outer-press': [
           'inset 0 1px 4px 0 rgba(156, 180, 0, 1)',
@@ -91,9 +91,9 @@ const config: Config = {
           '0px 2px 4px 0px rgba(255, 255, 255, 0.8)',
           '0px 0.5px 1px 0px rgba(255, 255, 255, 1.0)',
           '0px 0px 12px 0px rgba(255, 255, 255, 1.0)',
-          '0px 8px 16px 0px rgba(253, 242, 133, 1.0)',
-          '0px 6px 12px 0px rgba(156, 180, 0, 1.0)',
-          '0px 4px 8px 0px rgba(252, 237, 81, 1.0)',
+          '0px 8px 16px 0px rgba(252, 237, 81, 1.0)',
+          '0px 6px 12px 0px rgba(176, 165, 57, 1.0)',
+          '0px 4px 8px 0px rgba(126, 119, 41, 1.0)',
         ]
       }
     }
