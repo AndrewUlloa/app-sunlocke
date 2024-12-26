@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px] text-base font-eudoxusSansMedium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 w-fit select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px] text-base font-eudoxusSansMedium select-none ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 w-fit",
   {
     variants: {
       variant: {
@@ -32,7 +32,7 @@ const buttonVariants = cva(
   }
 )
 
-const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px]", {
+const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px] select-none", {
   variants: {
     variant: {
       default: "shadow-button-inner stroke-[#F9F9F8] stroke-[0.5px]",
