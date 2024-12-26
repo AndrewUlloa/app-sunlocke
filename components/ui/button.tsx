@@ -37,10 +37,7 @@ const buttonInnerVariants = cva("flex items-center justify-center rounded-[100px
       link: "",
     },
     size: {
-      default: "px-[16px] py-[6px]",
-      sm: "px-[16px] py-[6px]",
-      md: "px-[22px] py-[7px]",
-      lg: "px-[24px] py-[8px]",
+      default: "gap-[6px] px-[16px] py-[6px] text-[14px] sm:gap-2 sm:px-[24px] sm:py-[8px] sm:text-base",
       icon: "h-10 w-10",
     },
   },
@@ -67,9 +64,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         <div className={cn(buttonInnerVariants({ variant, size }))}>
-          <div className="flex items-center gap-2">
-            {children}
-          </div>
+          {children}
         </div>
       </Comp>
     )
