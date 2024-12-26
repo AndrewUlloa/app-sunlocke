@@ -23,7 +23,7 @@ export default function Home() {
           <a 
             href="https://www.sunlocke.com/en-us" 
             aria-current="page" 
-            className="flex items-center justify-center m-5 -translate-x-[8px] gap-1"
+            className="flex items-center justify-center m-5 lg:-translate-x-[8px] gap-1"
           >
             <Image
               src="https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/672971cc952da991c5eaddb4_android-chrome-512x512.png"
