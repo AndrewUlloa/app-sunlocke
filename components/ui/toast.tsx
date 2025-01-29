@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -16,7 +17,8 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4",
+      "sm:right-0 sm:top-auto sm:bottom-0 sm:flex-col md:max-w-[420px]",
       className
     )}
     {...props}
@@ -25,12 +27,29 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-top-full",
+  [
+    "group pointer-events-auto relative flex w-full items-center justify-between space-x-4",
+    "overflow-hidden p-6 pr-8 shadow-lg transition-all",
+    "data-[swipe=cancel]:translate-x-0",
+    "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]",
+    "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]",
+    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+    "data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full",
+    "data-[state=open]:slide-in-from-bottom-full duration-300",
+    "before:content-[''] before:absolute before:inset-0 before:z-[-1] before:rounded-[4px]",
+    "before:bg-gradient-to-b before:from-[#647dd2] before:via-[#546cb4] before:to-[#e0e5ff]",
+    "after:absolute after:inset-0 after:rounded-[4px] after:border-[8px] after:border-white",
+    "[box-shadow:0px_0px_3px_0px_rgba(255,255,255,0.5),_0px_0px_3px_0px_rgba(255,255,255,0.5),_0px_0px_2.25px_0px_rgba(255,255,255,0.7),_0px_0px_4.5px_0px_rgba(255,255,255,0.9),_0px_0px_4.5px_0px_#4d73c5,_0px_0px_3.75px_0px_#2150b6,_0px_0px_4.125px_0px_#1e48a4]"
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
-        destructive: "destructive:bg-destructive destructive:text-destructive-foreground",
+        default: [
+          "bg-[rgba(139,139,139,0.3)] backdrop-blur-[4px]",
+          "border-[0.8px] border-[#717f96]",
+          "text-[#fbfffc] [text-shadow:2px_1px_3px_#00000070]"
+        ],
+        destructive: "bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -76,13 +95,15 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-neutral-950/50 opacity-0 transition-opacity hover:text-neutral-950 focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600 dark:text-neutral-50/50 dark:hover:text-neutral-50",
+      "absolute right-2 top-2 transition-opacity focus:opacity-100 focus:outline-none group-hover:opacity-100",
       className
     )}
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <Button variant="close">
+      <X className="h-4 w-4" />
+    </Button>
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName
@@ -93,7 +114,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn("text-sm font-semibold [text-shadow:2px_1px_3px_#00000050]", className)}
     {...props}
   />
 ))

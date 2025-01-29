@@ -123,6 +123,7 @@ const config: Config = {
           '0px 6px 12px 0px rgba(176, 165, 57, 1.0)',
           '0px 4px 8px 0px rgba(126, 119, 41, 1.0)',
         ],
+        'complex': '0px 0px 3px 0px rgba(255,255,255,0.5), 0px 0px 3px 0px rgba(255,255,255,0.5), 0px 0px 2.25px 0px rgba(255,255,255,0.7), 0px 0px 4.5px 0px rgba(255,255,255,0.9), 0px 0px 4.5px 0px #4d73c5, 0px 0px 3.75px 0px #2150b6, 0px 0px 4.125px 0px #1e48a4'
       }
     }
   },

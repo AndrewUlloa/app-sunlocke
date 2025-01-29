@@ -24,6 +24,16 @@ const buttonVariants = cva(
           "hover:shadow-button-outer-hover_default hover:duration-[375ms]",
           "active:shadow-button-outer-press_default active:scale-[0.99] active:duration-100 lg:shadow-button-outer_default-lg lg:hover:shadow-button-outer-hover_default-lg lg:active:shadow-button-outer-press_default-lg",
         ].join(" "),
+        close: [
+          "bg-transparent [&_svg]:stroke-none",
+          "hover:bg-neutral-100/10",
+          "[&_svg]:stroke-neutral-950/50 [&_svg]:stroke-[1.5px]",
+          "hover:[&_svg]:stroke-neutral-950",
+          "dark:[&_svg]:stroke-neutral-50/50",
+          "dark:hover:[&_svg]:stroke-neutral-50",
+          "rounded-md",
+          "p-1",
+        ].join(" "),
         destructive:
           "bg-red-500 text-neutral-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
         outline:
@@ -46,6 +56,7 @@ const buttonInnerVariants = cva(
     variants: {
       variant: {
         default: "shadow-button-inner stroke-[#F9F9F8] stroke-[0.5px]",
+        close: "",
         destructive: "drop-shadow-none",
         outline: "drop-shadow-none",
         secondary: "drop-shadow-none",

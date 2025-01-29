@@ -3,64 +3,72 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
+// Tobias fonts
+const tobiasLight = localFont({
+  src: "./fonts/Tobias-Light.woff",
+  variable: "--font-tobias-light",
+  preload: true,
+  display: "swap",
+});
+
+const tobiasRegular = localFont({
+  src: "./fonts/Tobias-Regular.woff",
+  variable: "--font-tobias-regular",
+  preload: true,
+  display: "swap",
+});
+
+const tobiasMedium = localFont({
+  src: "./fonts/Tobias-Medium.woff",
+  variable: "--font-tobias-medium",
+  preload: true,
+  display: "swap",
+});
+
+const tobiasSemiBold = localFont({
+  src: "./fonts/Tobias-SemiBold.woff",
+  variable: "--font-tobias-semibold",
+  preload: true,
+  display: "swap",
+});
+
+// Eudoxus Sans fonts
+const eudoxusSansRegular = localFont({
+  src: "./fonts/EudoxusSans-Regular.woff",
+  variable: "--font-eudoxus-sans-regular",
+  preload: true,
+  display: "swap",
+});
+
+const eudoxusSansMedium = localFont({
+  src: "./fonts/EudoxusSans-Medium.woff",
+  variable: "--font-eudoxus-sans-medium",
+  preload: true,
+  display: "swap",
+});
+
+const eudoxusSansBold = localFont({
+  src: "./fonts/EudoxusSans-Bold.woff",
+  variable: "--font-eudoxus-sans-bold",
+  preload: true,
+  display: "swap",
+});
+
+// Geist fonts
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
+  preload: true,
+  display: "swap",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
-});
-
-// Tobias-Light.woff
-const tobiasLight = localFont({
-  src: "./fonts/Tobias-Light.woff",
+  preload: true,
   display: "swap",
-  variable: "--font-tobias-light",
-});
-
-// Tobias-Regular.woff
-const tobiasRegular = localFont({
-  src: "./fonts/Tobias-Regular.woff",
-  display: "swap",
-  variable: "--font-tobias-regular",
-});
-
-// Tobias-Medium.woff
-const tobiasMedium = localFont({
-  src: "./fonts/Tobias-Medium.woff",
-  display: "swap",
-  variable: "--font-tobias-medium",
-});
-
-// Tobias-SemiBold.woff
-const tobiasSemiBold = localFont({
-  src: "./fonts/Tobias-SemiBold.woff",
-  display: "swap",
-  variable: "--font-tobias-semibold",
-});
-
-// EudoxusSans-Regular.woff
-const eudoxusSansRegular = localFont({
-  src: "./fonts/EudoxusSans-Regular.woff",
-  display: "swap",
-  variable: "--font-eudoxus-sans-regular",
-});
-
-// EudoxusSans-Medium.woff
-const eudoxusSansMedium = localFont({
-  src: "./fonts/EudoxusSans-Medium.woff",
-  display: "swap",
-  variable: "--font-eudoxus-sans-medium",
-});
-
-// EudoxusSans-Bold.woff
-const eudoxusSansBold = localFont({
-  src: "./fonts/EudoxusSans-Bold.woff",
-  display: "swap",
-  variable: "--font-eudoxus-sans-bold",
 });
 
 export const metadata: Metadata = {
@@ -77,12 +85,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const fontVariables = [
+    tobiasLight.variable,
+    tobiasRegular.variable,
+    tobiasMedium.variable,
+    tobiasSemiBold.variable,
+    eudoxusSansRegular.variable,
+    eudoxusSansMedium.variable,
+    eudoxusSansBold.variable,
+    geistSans.variable,
+    geistMono.variable,
+  ].join(' ');
+
   return (
     <html lang="en">
-      <body
-          className={`${tobiasLight.variable} ${tobiasRegular.variable} ${tobiasMedium.variable} ${tobiasSemiBold.variable} ${eudoxusSansRegular.variable} ${eudoxusSansMedium.variable} ${eudoxusSansBold.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
-
-      >
+      <body className={`${fontVariables} antialiased`}>
         {children}
         <Toaster />
       </body>

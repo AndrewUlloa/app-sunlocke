@@ -3,7 +3,7 @@ import { LanguagesIcon } from "@/components/ui/languages";
 
 export function Header() {
   return (
-    <section className="w-[1192px] h-[76px] flex flex-row justify-between items-center py-6 absolute top-0 left-1/2 -translate-x-1/2">
+    <section className="w-full max-w-[1192px] h-[76px] flex flex-row justify-between items-center py-6 mx-auto">
       <div className="flex-1 flex justify-start">
         <LanguagesIcon />
       </div>
