@@ -8,6 +8,13 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.(m4a|aac)$/,
+      use: { loader: 'file-loader' }
+    })
+    return config
+  }
 };
 
 export default nextConfig;

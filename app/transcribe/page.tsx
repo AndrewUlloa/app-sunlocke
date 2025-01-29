@@ -326,9 +326,9 @@ export default function AudioTranscriptionApp() {
                       <input
                         id="audio-upload"
                         type="file"
-                        className="hidden"
                         onChange={handleFileChange}
-                        accept="audio/*"
+                        accept="audio/mp4, audio/x-m4a, .m4a"
+                        className="hidden"
                       />
                     </label>
                   </motion.div>
