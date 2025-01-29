@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -65,6 +66,10 @@ const eudoxusSansBold = localFont({
 export const metadata: Metadata = {
   title: "Sun Locke",
   description: "Sun Locke",
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -79,6 +84,7 @@ export default function RootLayout({
 
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

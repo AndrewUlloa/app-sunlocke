@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { LoginForm } from "@/components/login-form";
 import Image from "next/image";
 import { AnimatedBackground } from "@/components/ui/animated-background";
+import { LanguagesIcon } from "@/components/ui/languages";
 export const metadata: Metadata = {
   openGraph: {
     images: [
@@ -20,6 +21,7 @@ export default function Home() {
     <AnimatedBackground>
       <div className="min-h-[100dvh] w-full flex flex-col items-center">
         <section id="Header" className="w-full absolute top-0 left-0">
+            <LanguagesIcon />
           <a 
             href="https://www.sunlocke.com/en-us" 
             aria-current="page" 
