@@ -9,10 +9,10 @@ const buttonVariants = cva(
     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px]",
     "text-base font-eudoxusSansMedium select-none",
     "ring-offset-white transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2", 
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_*]:select-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    "dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 w-fit"
+    "dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300"
   ].join(" "),
   {
     variants: {
@@ -41,7 +41,7 @@ const buttonVariants = cva(
 )
 
 const buttonInnerVariants = cva(
-  "flex items-center justify-center rounded-[100px]",
+  "inline-flex items-center justify-center rounded-[100px] w-fit",
   {
     variants: {
       variant: {

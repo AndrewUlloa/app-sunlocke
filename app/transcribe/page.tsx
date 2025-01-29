@@ -10,6 +10,8 @@ import { Upload, FileText, Download, Loader2, AlertTriangle } from "lucide-react
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
+import { AnimatedBackground } from "@/components/ui/animated-background"
+import { cn } from "@/lib/utils"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -249,6 +251,7 @@ export default function AudioTranscriptionApp() {
   }
 
   return (
+    <AnimatedBackground>
     <motion.div
       className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8"
       initial="hidden"
@@ -258,7 +261,7 @@ export default function AudioTranscriptionApp() {
       <motion.div className="max-w-3xl mx-auto" variants={containerVariants}>
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center font-tobias">Audio Transcription App</CardTitle>
+            <CardTitle className="text-[48px] leading-[125%] text-center font-eudoxusSansBold">Audio Transcription</CardTitle>
           </CardHeader>
         </Card>
 
@@ -271,18 +274,25 @@ export default function AudioTranscriptionApp() {
           >
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle className="font-tobias">Error</AlertTitle>
+              <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </motion.div>
         )}
 
         <Card className="mb-6">
-          <CardContent className="p-6">
+          <CardContent className={cn(
+            "border border-white bg-white/50",
+            "px-[40px] py-[20px]",
+            "md:px-[120px] md:py-[40px] md:gap-5",
+            "rounded-xl"
+          )}>
             <motion.div className="mb-4" variants={itemVariants}>
-              <Label htmlFor="audio-upload" className="block text-sm font-medium mb-2 font-tobias">
-                Upload Audio File (Max 25MB)
-              </Label>
+              <div className="mb-4">
+                <Label className="block text-sm mb-2 font-eudoxusSansMedium">
+                  Upload Audio File (Max 25MB)
+                </Label>
+              </div>
               <motion.div
                 className="flex items-center justify-center w-full"
                 variants={uploadAreaVariants}
@@ -306,7 +316,7 @@ export default function AudioTranscriptionApp() {
                   >
                     <Upload className={`w-10 h-10 mb-3 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
                     <p className="mb-2 text-sm text-muted-foreground">
-                      <span className="font-semibold font-tobias">Click to upload</span> or drag and drop
+                      <span className="font-eudoxusSansMedium">Click to upload</span> or drag and drop
                     </p>
                     <p className="text-xs text-muted-foreground">MP3, WAV, OGG, FLAC, M4A, or WEBM (Max 25MB)</p>
                   </motion.div>
@@ -334,7 +344,7 @@ export default function AudioTranscriptionApp() {
             </motion.div>
 
             <motion.div className="mb-4" variants={itemVariants}>
-              <Label htmlFor="prompt" className="block text-sm font-medium mb-2 font-tobias">
+              <Label htmlFor="prompt" className="block text-sm mb-2 font-eudoxusSansMedium">
                 Prompt (Optional)
               </Label>
               <Input
@@ -353,8 +363,9 @@ export default function AudioTranscriptionApp() {
               whileHover={!isLoading && file ? "hover" : "disabled"}
               whileTap={!isLoading && file ? "tap" : "disabled"}
               whileFocus="focus"
+              className="flex justify-center"
             >
-              <Button onClick={handleTranscribe} disabled={!file || isLoading} className="w-full font-tobias">
+              <Button onClick={handleTranscribe} disabled={!file || isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -386,7 +397,7 @@ export default function AudioTranscriptionApp() {
             >
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle className="font-tobias">Transcription and Actionable Items</CardTitle>
+                  <CardTitle className="font-eudoxusSansBold">Transcription and Actionable Items</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Textarea
@@ -394,13 +405,13 @@ export default function AudioTranscriptionApp() {
                     readOnly
                     className="w-full h-64 mb-4 transition-shadow focus:outline-none"
                   />
-                  <Button onClick={handleDownload} className="w-full mb-4 font-tobias">
-                    <Download className="mr-2 h-4 w-4" />
+                  <Button onClick={handleDownload}>
+                    <Download/>
                     Download Transcription
                   </Button>
 
                   <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-2 font-tobias">Actionable Items</h3>
+                    <h3 className="text-lg mb-2 font-eudoxusSansBold">Actionable Items</h3>
                     <Card className="p-4">
                       <pre className="whitespace-pre-wrap text-sm">{actionableItems}</pre>
                     </Card>
@@ -410,8 +421,9 @@ export default function AudioTranscriptionApp() {
             </motion.div>
           )}
         </AnimatePresence>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatedBackground>
   )
 }
 

@@ -55,14 +55,14 @@ const LanguagesIcon = () => {
 
   return (
     <div
-      className="cursor-pointer select-none p-2 rounded-md transition-colors duration-200 flex items-center justify-center"
+      className="cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center"
       onMouseEnter={onAnimationStart}
       onMouseLeave={onAnimationEnd}
     >
       <motion.svg
         xmlns="http://www.w3.org/2000/svg"
-        width="28"
-        height="28"
+        width="24"
+        height="24"
         viewBox="0 24"
         fill="none"
         stroke="currentColor"

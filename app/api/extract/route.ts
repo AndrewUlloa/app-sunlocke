@@ -21,7 +21,7 @@ const requestBodySchema = z.object({
     .string({ required_error: "transcription is required" })
     .trim()
     .min(1, "Transcription must not be empty")
-    .max(4000, "Transcription too long (max 4000 chars)"),
+    .max(32000, "Transcription too long (max 32k chars)"),
 })
 
 interface GroqError extends Error {
