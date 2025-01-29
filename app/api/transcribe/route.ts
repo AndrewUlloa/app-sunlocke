@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
+export const runtime = "edge"
+
 // Validate environment variables with Zod
 const envSchema = z.object({
   GROQ_API_KEY: z.string().min(1, "Groq API key must be set"),
