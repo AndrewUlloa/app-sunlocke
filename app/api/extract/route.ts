@@ -1,32 +1,20 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-import { Groq } from "groq-sdk"
+import { estimateTokens, splitAndSummarizeText } from "@/lib/utils"
 
 export const runtime = "edge"
 
-// 1. Validate environment variables with Zod
+const requestBodySchema = z.object({
+  transcription: z.string(),
+})
+
+// Validate environment variables
 const envSchema = z.object({
   GROQ_API_KEY: z.string().min(1, "Groq API key must be set"),
 })
 const { GROQ_API_KEY } = envSchema.parse(process.env)
 
-// 2. Initialize Groq with the validated API key
-const groqClient = new Groq({
-  apiKey: GROQ_API_KEY,
-})
-
-// 3. Define a Zod schema for the request body
-const requestBodySchema = z.object({
-  transcription: z
-    .string({ required_error: "transcription is required" })
-    .trim()
-    .min(1, "Transcription must not be empty")
-    .max(32000, "Transcription too long (max 32k chars)"),
-})
-
-interface GroqError extends Error {
-  response?: Response;
-}
+const TOKEN_LIMIT = 6000
 
 export async function POST(req: NextRequest) {
   console.log("POST /api/extract called")
@@ -51,14 +39,34 @@ export async function POST(req: NextRequest) {
   console.log("Transcription to process:", transcription.slice(0, 50), "...")
 
   try {
+    // Check if we need to summarize first
+    const estimatedTokens = estimateTokens(transcription)
+    console.log("Estimated tokens:", estimatedTokens)
+
+    let textToProcess = transcription
+    let usedSummary = false
+
+    if (estimatedTokens > TOKEN_LIMIT) {
+      console.log("Token limit exceeded, generating summary first...")
+      textToProcess = await splitAndSummarizeText(transcription, GROQ_API_KEY)
+      usedSummary = true
+      console.log("Summary generated, new token count:", estimateTokens(textToProcess))
+    }
+
     // 6. Attempt Groq Chat Completion
     console.log("Sending request to Groq API")
 
-    const chatCompletion = await groqClient.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: `Extract actionable items from the transcriptions provided, tailored to the specific context of the discussion, such as a meeting, sales call, or marketing consult. Align actionable items with expected business outcomes for each type of context.
+    const chatCompletion = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "system",
+            content: `Extract actionable items from the ${usedSummary ? 'summarized' : ''} transcription provided, tailored to the specific context of the discussion, such as a meeting, sales call, or marketing consult. Align actionable items with expected business outcomes for each type of context.
 
 Steps:
 1. Identify Context: Determine the type of context (e.g., meeting, sales call, marketing consult) from the transcription.
@@ -71,34 +79,36 @@ Output the actionable items in a list format. Each item should detail the task, 
 Notes:
 - Ensure items are contextually informed by the conversation.
 - Tailor items to suit the specific nature of each setting (e.g., strategic action plans for meetings, follow-up actions in sales calls).
-- Adapt the tasks based on typical outcomes expected in meetings, sales calls, or consultative sessions.`,
-        },
-        {
-          role: "user",
-          content: transcription,
-        },
-      ],
-      model: "llama-3.1-8b-instant",
-      temperature: 1,
-      top_p: 1,
-      stream: false,
+- Adapt the tasks based on typical outcomes expected in meetings, sales calls, or consultative sessions.${usedSummary ? '\n\nNote: This analysis is based on a summarized version of the original transcription.' : ''}`,
+          },
+          {
+            role: "user",
+            content: textToProcess,
+          },
+        ],
+        model: "deepseek-r1-distill-llama-70b",
+        temperature: 1,
+        top_p: 1,
+        stream: false,
+      }),
     })
 
-    const actionableItems = chatCompletion.choices[0]?.message?.content ?? ""
-    console.log("Extraction result received, length:", actionableItems.length)
-
-    return NextResponse.json({ actionableItems })
-  } catch (error: unknown) {
-    console.error("Groq API error:", error)
-
-    // If error is from Groq API
-    const groqError = error as GroqError
-    if (groqError.response) {
-      const errorText = await groqError.response.text()
-      console.error("Groq API error response:", errorText)
+    if (!chatCompletion.ok) {
+      const errorData = await chatCompletion.json()
+      throw new Error(errorData.error?.message || "Failed to extract actionable items")
     }
 
-    return NextResponse.json({ error: "Error calling Groq API" }, { status: 500 })
+    const data = await chatCompletion.json()
+    return NextResponse.json({ 
+      actionableItems: data.choices[0].message.content,
+      usedSummary
+    })
+  } catch (error) {
+    console.error("Groq API error:", error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "An unknown error occurred" },
+      { status: 500 }
+    )
   }
 }
 

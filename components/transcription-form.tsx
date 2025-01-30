@@ -8,8 +8,7 @@ import { Upload, FileText, Download, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
-
-const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB in bytes
+import { splitAudioIntoChunks } from "@/lib/audio-utils"
 
 const uploadAreaVariants = {
   idle: {
@@ -55,25 +54,12 @@ export function TranscriptionForm({
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [prompt, setPrompt] = useState<string>("")
+  const [usedSummary, setUsedSummary] = useState(false)
   const { toast } = useToast()
-
-  const getTotalSize = (fileList: File[]) => {
-    return fileList.reduce((total, file) => total + file.size, 0)
-  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || [])
-    const totalSize = getTotalSize([...files, ...selectedFiles])
     
-    if (totalSize > MAX_FILE_SIZE) {
-      toast({
-        title: "Files too large",
-        description: "Total size of all files must be less than 25MB.",
-        duration: 5000,
-      })
-      return
-    }
-
     const invalidFiles = selectedFiles.filter(file => !file.type.startsWith("audio/"))
     if (invalidFiles.length > 0) {
       toast({
@@ -107,17 +93,7 @@ export function TranscriptionForm({
     setIsDragging(false)
     
     const droppedFiles = Array.from(e.dataTransfer.files)
-    const totalSize = getTotalSize([...files, ...droppedFiles])
     
-    if (totalSize > MAX_FILE_SIZE) {
-      toast({
-        title: "Files too large",
-        description: "Total size of all files must be less than 25MB.",
-        duration: 5000,
-      })
-      return
-    }
-
     const invalidFiles = droppedFiles.filter(file => !file.type.startsWith("audio/"))
     if (invalidFiles.length > 0) {
       toast({
@@ -144,32 +120,95 @@ export function TranscriptionForm({
     if (!files.length) return
 
     setIsLoading(true)
-    const formData = new FormData()
-    files.forEach(file => formData.append("audio", file))
-    if (prompt) {
-      formData.append("prompt", prompt)
-    }
-
+    setUsedSummary(false)
+    let allTranscriptions = ""
+    
     try {
-      const transcriptionResponse = await fetch("/api/transcribe", {
-        method: "POST",
-        body: formData,
-      })
+      // Process each file
+      for (const file of files) {
+        // Split into chunks if needed
+        const chunks = await splitAudioIntoChunks(file)
+        console.log(`Processing ${file.name}: split into ${chunks.length} chunks`)
+        
+        // Process each chunk sequentially
+        const chunkTranscriptions = []
+        for (let i = 0; i < chunks.length; i++) {
+          const chunk = chunks[i]
+          console.log(`Processing chunk ${i + 1}/${chunks.length} of ${file.name}`)
+          
+          // Try the default route first (transcribe)
+          try {
+            const formData = new FormData()
+            formData.append("audio", chunk)
+            if (prompt) {
+              formData.append("prompt", prompt)
+            }
 
-      if (!transcriptionResponse.ok) {
-        const errorData = await transcriptionResponse.json()
-        throw new Error(errorData.error || "Transcription failed")
+            const transcriptionResponse = await fetch("/api/transcribe", {
+              method: "POST",
+              body: formData,
+            })
+
+            if (!transcriptionResponse.ok) {
+              const errorData = await transcriptionResponse.json()
+              throw new Error(errorData.error || "Transcription failed")
+            }
+
+            const transcriptionData = await transcriptionResponse.json()
+            chunkTranscriptions.push(transcriptionData.combinedText)
+            
+            // Update progress in the UI
+            setTranscription(prev => {
+              const newText = prev + (prev ? "\n" : "") + `[Processing ${file.name} - Chunk ${i + 1}/${chunks.length}]\n` + transcriptionData.combinedText
+              return newText
+            })
+          } catch (error) {
+            console.log(`Default route failed, trying Whisper fallback for chunk ${i + 1}...`, error)
+            
+            // If default route fails, try the Whisper fallback route
+            const formData = new FormData()
+            formData.append("audio", chunk)
+            if (prompt) {
+              formData.append("prompt", prompt)
+            }
+
+            const fallbackResponse = await fetch("/api/whisper", {
+              method: "POST",
+              body: formData,
+            })
+
+            if (!fallbackResponse.ok) {
+              const errorData = await fallbackResponse.json()
+              throw new Error(errorData.error || "Transcription failed on Whisper fallback route")
+            }
+
+            const fallbackData = await fallbackResponse.json()
+            chunkTranscriptions.push(fallbackData.combinedText)
+            
+            // Update progress in the UI
+            setTranscription(prev => {
+              const newText = prev + (prev ? "\n" : "") + `[Processing ${file.name} - Chunk ${i + 1}/${chunks.length} (Whisper Fallback)]\n` + fallbackData.combinedText
+              return newText
+            })
+          }
+        }
+        
+        // Combine chunks for this file
+        const fileTranscription = chunkTranscriptions.join("\n\n")
+        if (allTranscriptions) allTranscriptions += "\n\n"
+        allTranscriptions += `[${file.name}]\n${fileTranscription}`
       }
 
-      const transcriptionData = await transcriptionResponse.json()
-      setTranscription(transcriptionData.combinedText)
+      // Set the final combined transcription
+      setTranscription(allTranscriptions)
 
+      // Process the complete transcription with the extract API
       const extractionResponse = await fetch("/api/extract", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ transcription: transcriptionData.combinedText }),
+        body: JSON.stringify({ transcription: allTranscriptions }),
       })
 
       if (!extractionResponse.ok) {
@@ -179,6 +218,7 @@ export function TranscriptionForm({
 
       const extractionData = await extractionResponse.json()
       setActionableItems(extractionData.actionableItems)
+      setUsedSummary(extractionData.usedSummary)
 
       toast({
         title: "Process complete",
@@ -242,7 +282,7 @@ export function TranscriptionForm({
           {/* Upload Section */}
           <div className="w-full">
             <Label className="block text-[14px] mb-2 font-eudoxusSansMedium md:text-base">
-              Upload Audio Files (Total max 25MB)
+              Upload Audio Files
             </Label>
             <motion.div
               className="flex items-center justify-center w-full"
@@ -382,7 +422,7 @@ export function TranscriptionForm({
 
                   <div>
                     <Label className="block text-[14px] mb-2 font-eudoxusSansMedium md:text-base">
-                      Actionable Items
+                      Actionable Items {usedSummary && <span className="text-xs text-muted-foreground ml-2">(Based on summarized transcription)</span>}
                     </Label>
                     <Card className="p-3 md:p-4">
                       <pre className="whitespace-pre-wrap text-[10px] md:text-sm">{actionableItems}</pre>
