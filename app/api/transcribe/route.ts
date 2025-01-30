@@ -4,18 +4,16 @@ import { z } from "zod"
 // Use edge runtime to handle large files without size limits
 export const runtime = "edge"
 
-// Validate environment variables with Zod
-const envSchema = z.object({
-  GROQ_API_KEY: z.string().min(1, "Groq API key must be set"),
-})
-const { GROQ_API_KEY } = envSchema.parse(process.env)
-
-const TRANSCRIPTION_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
-
 // Configuration
 const MAX_RETRIES = 3
 const INITIAL_RETRY_DELAY = 1000 // 1 second
 const FETCH_TIMEOUT = 120000 // 2 minutes
+const TRANSCRIPTION_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
+
+// Validate environment variables with Zod
+const envSchema = z.object({
+  GROQ_API_KEY: z.string().min(1, "Groq API key must be set"),
+})
 
 class TranscriptionError extends Error {
   constructor(
@@ -50,6 +48,7 @@ async function fetchWithTimeout(
 async function retryableTranscriptionRequest(
   audioFile: File,
   prompt: string | null,
+  apiKey: string,
   attempt = 1
 ): Promise<{ text: string }> {
   const transcriptionFormData = new FormData()
@@ -69,7 +68,7 @@ async function retryableTranscriptionRequest(
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: transcriptionFormData,
       }
@@ -95,7 +94,7 @@ async function retryableTranscriptionRequest(
         const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1) // Exponential backoff
         console.log(`Retrying in ${delay}ms...`)
         await new Promise(resolve => setTimeout(resolve, delay))
-        return retryableTranscriptionRequest(audioFile, prompt, attempt + 1)
+        return retryableTranscriptionRequest(audioFile, prompt, apiKey, attempt + 1)
       }
 
       throw new TranscriptionError(
@@ -118,7 +117,7 @@ async function retryableTranscriptionRequest(
         const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1)
         console.log(`Request timed out, retrying in ${delay}ms...`)
         await new Promise(resolve => setTimeout(resolve, delay))
-        return retryableTranscriptionRequest(audioFile, prompt, attempt + 1)
+        return retryableTranscriptionRequest(audioFile, prompt, apiKey, attempt + 1)
       }
       throw new TranscriptionError('Request timed out after all retry attempts')
     }
@@ -127,7 +126,7 @@ async function retryableTranscriptionRequest(
       const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1)
       console.log(`Error occurred, retrying in ${delay}ms...`, error)
       await new Promise(resolve => setTimeout(resolve, delay))
-      return retryableTranscriptionRequest(audioFile, prompt, attempt + 1)
+      return retryableTranscriptionRequest(audioFile, prompt, apiKey, attempt + 1)
     }
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -138,13 +137,17 @@ async function retryableTranscriptionRequest(
 export async function POST(req: NextRequest) {
   console.log("POST /api/transcribe called")
 
-  if (!GROQ_API_KEY) {
-    console.error("Groq API key is not set")
+  // Validate environment variables at runtime
+  const envParseResult = envSchema.safeParse(process.env)
+  if (!envParseResult.success) {
+    console.error("Environment validation failed:", envParseResult.error)
     return NextResponse.json(
-      { error: "Groq API key is not set" },
+      { error: "Missing required environment variables" },
       { status: 500 }
     )
   }
+
+  const { GROQ_API_KEY } = envParseResult.data
 
   try {
     const formData = await req.formData()
@@ -166,7 +169,7 @@ export async function POST(req: NextRequest) {
 
     for (const audioFile of audioFiles) {
       try {
-        const data = await retryableTranscriptionRequest(audioFile, prompt)
+        const data = await retryableTranscriptionRequest(audioFile, prompt, GROQ_API_KEY)
         
         if (combinedText) {
           combinedText += "\n\n"

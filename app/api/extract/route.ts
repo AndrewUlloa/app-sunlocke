@@ -12,14 +12,25 @@ const requestBodySchema = z.object({
 const envSchema = z.object({
   GROQ_API_KEY: z.string().min(1, "Groq API key must be set"),
 })
-const { GROQ_API_KEY } = envSchema.parse(process.env)
 
 const TOKEN_LIMIT = 6000
 
 export async function POST(req: NextRequest) {
   console.log("POST /api/extract called")
 
-  // 4. Parse the JSON request body and validate
+  // Validate environment variables at runtime
+  const envParseResult = envSchema.safeParse(process.env)
+  if (!envParseResult.success) {
+    console.error("Environment validation failed:", envParseResult.error)
+    return NextResponse.json(
+      { error: "Missing required environment variables" },
+      { status: 500 }
+    )
+  }
+
+  const { GROQ_API_KEY } = envParseResult.data
+
+  // Parse the JSON request body and validate
   let body
   try {
     body = await req.json()
@@ -34,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parseResult.error.flatten().fieldErrors }, { status: 400 })
   }
 
-  // 5. Extract the validated transcription
+  // Extract the validated transcription
   const { transcription } = parseResult.data
   console.log("Transcription to process:", transcription.slice(0, 50), "...")
 
@@ -53,7 +64,7 @@ export async function POST(req: NextRequest) {
       console.log("Summary generated, new token count:", estimateTokens(textToProcess))
     }
 
-    // 6. Attempt Groq Chat Completion
+    // Attempt Groq Chat Completion
     console.log("Sending request to Groq API")
 
     const chatCompletion = await fetch("https://api.groq.com/openai/v1/chat/completions", {

@@ -9,7 +9,7 @@ export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4.5)
 }
 
-export async function splitAndSummarizeText(text: string, groqApiKey: string): Promise<string> {
+export async function splitAndSummarizeText(text: string, apiKey: string): Promise<string> {
   // Split text into roughly equal halves
   const midpoint = Math.floor(text.length / 2)
   const firstHalf = text.slice(0, midpoint)
@@ -20,8 +20,8 @@ export async function splitAndSummarizeText(text: string, groqApiKey: string): P
 
   // Process each half in parallel
   const [summary1, summary2] = await Promise.all([
-    summarizeText(firstHalf, groqApiKey, summarizationPrompt),
-    summarizeText(secondHalf, groqApiKey, summarizationPrompt)
+    summarizeText(firstHalf, apiKey, summarizationPrompt),
+    summarizeText(secondHalf, apiKey, summarizationPrompt)
   ])
 
   // Combine summaries
