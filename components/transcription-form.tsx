@@ -376,7 +376,7 @@ export function TranscriptionForm({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Provide context or specify how to spell unfamiliar words"
-              className="w-full text-xs md:text-sm"
+              className="w-full text-base"
             />
           </div>
 
