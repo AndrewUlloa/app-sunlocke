@@ -1,8 +1,10 @@
 "use client"
 
+import { Metadata } from "next"
 import { TranscriptionForm } from "@/components/transcription-form"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { Header } from "@/components/ui/header"
+
 
 export default function TranscribePage() {
   return (
