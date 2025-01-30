@@ -104,7 +104,7 @@ export default function RootLayout({
         <Toaster
           position="bottom-right"
           theme="light"
-          duration={5000}
+          duration={4000}
           style={{
             background: 'rgba(255, 255, 255, 0.9)',
             backdropFilter: 'blur(8px)',
