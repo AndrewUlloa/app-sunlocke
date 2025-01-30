@@ -2,6 +2,7 @@ import { TranscriptionForm } from "@/components/transcription-form"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { Header } from "@/components/ui/header"
 import { Metadata } from "next"
+
 export const metadata: Metadata = {
   title: "Audio Transcription - Sun Locke",
   description: "Transcribe your audio files and extract actionable items",
