@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 
 // Tobias fonts
 const tobiasLight = localFont({
@@ -101,7 +101,20 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${fontVariables} antialiased`}>
         {children}
-        <Toaster />
+        <Toaster
+          position="bottom-right"
+          theme="light"
+          duration={5000}
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(8px)',
+            color: '#000',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontFamily: 'var(--font-eudoxus-sans-medium)',
+          }}
+        />
       </body>
     </html>
   );
