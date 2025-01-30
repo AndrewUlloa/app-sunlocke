@@ -9,10 +9,6 @@ const envSchema = z.object({
   CLOUDFLARE_ACCOUNT_ID: z.string().min(1, "Cloudflare Account ID must be set"),
 })
 
-const { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID } = envSchema.parse(process.env)
-
-const WHISPER_ENDPOINT = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/openai/whisper-large-v3-turbo`
-
 interface WhisperResponse {
   result: {
     text: string
@@ -36,9 +32,13 @@ async function wait(ms: number) {
 async function transcribeWithRetry(
   audioFile: File, 
   base64Audio: string, 
-  prompt: string | null, 
+  prompt: string | null,
+  apiToken: string,
+  accountId: string,
   retryCount = 0
 ): Promise<WhisperResponse> {
+  const whisperEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/openai/whisper-large-v3-turbo`
+  
   try {
     const requestBody = {
       audio: base64Audio,
@@ -49,10 +49,10 @@ async function transcribeWithRetry(
     }
 
     console.log(`Processing file: ${audioFile.name} (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`)
-    const response = await fetch(WHISPER_ENDPOINT, {
+    const response = await fetch(whisperEndpoint, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        "Authorization": `Bearer ${apiToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
@@ -69,7 +69,7 @@ async function transcribeWithRetry(
       if (canRetry) {
         console.log(`Retrying in ${RETRY_DELAY/1000} seconds...`)
         await wait(RETRY_DELAY)
-        return transcribeWithRetry(audioFile, base64Audio, prompt, retryCount + 1)
+        return transcribeWithRetry(audioFile, base64Audio, prompt, apiToken, accountId, retryCount + 1)
       }
       
       throw new Error(
@@ -89,7 +89,7 @@ async function transcribeWithRetry(
     if (retryCount < MAX_RETRIES) {
       console.log(`Request failed, retrying in ${RETRY_DELAY/1000} seconds...`)
       await wait(RETRY_DELAY)
-      return transcribeWithRetry(audioFile, base64Audio, prompt, retryCount + 1)
+      return transcribeWithRetry(audioFile, base64Audio, prompt, apiToken, accountId, retryCount + 1)
     }
     throw error
   }
@@ -97,6 +97,18 @@ async function transcribeWithRetry(
 
 export async function POST(req: NextRequest) {
   console.log("POST /api/whisper called")
+
+  // Validate environment variables at runtime
+  const envParseResult = envSchema.safeParse(process.env)
+  if (!envParseResult.success) {
+    console.error("Environment validation failed:", envParseResult.error)
+    return NextResponse.json(
+      { error: "Missing required environment variables" },
+      { status: 500 }
+    )
+  }
+
+  const { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID } = envParseResult.data
 
   try {
     const formData = await req.formData()
@@ -122,7 +134,13 @@ export async function POST(req: NextRequest) {
         const arrayBuffer = await audioFile.arrayBuffer()
         const base64Audio = Buffer.from(arrayBuffer).toString('base64')
 
-        const data = await transcribeWithRetry(audioFile, base64Audio, prompt)
+        const data = await transcribeWithRetry(
+          audioFile, 
+          base64Audio, 
+          prompt, 
+          CLOUDFLARE_API_TOKEN, 
+          CLOUDFLARE_ACCOUNT_ID
+        )
         const transcriptionText = data.result.text
 
         if (combinedText) {
