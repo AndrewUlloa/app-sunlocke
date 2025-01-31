@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     siteName: "Sun Locke",
     images: [
       {
-        url: 'https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/6752962dceb9162ce9abfa3e_Open%20Graph%20Image%20EN-US_v3.png',
+        url: 'https://cdn.prod.website-files.com/6729490eec7b4529805b89b0/679c151b7b06ea6a87733f9a_Open%20Graph%20Image%20EN_US_AI_Companion.png',
         width: 1200,
         height: 630,
         alt: 'Sun Locke',
