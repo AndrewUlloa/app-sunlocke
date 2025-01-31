@@ -324,7 +324,7 @@ export function TranscriptionForm({
                   id="audio-upload"
                   type="file"
                   onChange={handleFileChange}
-                  accept="audio/mp4, audio/x-m4a, .m4a"
+                  accept="audio/mp3, audio/wav, audio/ogg, audio/flac, audio/mp4, audio/x-m4a, audio/webm, .mp3, .wav, .ogg, .flac, .m4a, .webm"
                   className="hidden"
                   multiple
                 />
