@@ -64,7 +64,7 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
           {/* Inner content container */}
           <div className="relative z-10">
             {/* Top ellipses container */}
-            <div className="flex items-center justify-between gap-[4px] mb-[4px]">
+            <div className="flex items-center justify-between gap-[4px]">
               <div
                 className="w-[4px] h-[4px] rounded-full"
                 style={{
@@ -86,12 +86,12 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
             </div>
 
             {/* Information container outer */}
-            <div className="flex flex-col py-[16px] px-[20px]">
+            <div className="flex flex-col pt-[8px] pb-[24px] px-[20px]">
               {/* Information container inner: text frame and info button */}
               <div className="flex flex-row items-center justify-start gap-[10px]">
                 {/* Icon button */}
                 <div
-                  className="flex items-center justify-center bg-transparent border-0 cursor-pointer rounded-full shadow-[2px_1px_3px_#00000070]"
+                  className="flex items-center justify-center bg-transparent border-0 cursor-pointer rounded-full antialiased"
                   aria-label="Toast status"
                 >
                   {isLoading ? (
@@ -101,34 +101,31 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
                   )}
                 </div>
                 {/* Text frame */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-[8px]">
                   <p
-                    className="text-[13px] font-eudoxusSansMedium text-[#fbfffc] leading-[1.25]"
+                    className="text-[13px] font-eudoxusSansBold text-[#fbfffc]"
                     style={{
-                      textShadow: "2px 1px 3px #00000070",
+                      textShadow: "2px 1px 3px #00000050",
                     }}
                   >
-                    <span
-                      className="text-[13px] font-eudoxusSansBold text-[#fbfffc]"
+                    {props.message}
+                  </p>
+                  {description && (
+                    <p
+                      className="text-[13px] font-eudoxusSansMedium text-[#fbfffc] leading-[1.25]"
                       style={{
-                        textShadow: "2px 1px 3px #00000050",
+                        textShadow: "2px 1px 3px #00000070",
                       }}
                     >
-                      {props.message}
-                    </span>
-                    {description && (
-                      <>
-                        <br />
-                        {description}
-                      </>
-                    )}
-                  </p>
+                      {description}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Bottom ellipses container */}
-            <div className="flex items-center justify-between gap-[4px] mt-[4px]">
+            <div className="flex items-center justify-between gap-[4px]">
               <div
                 className="w-[4px] h-[4px] rounded-full"
                 style={{
