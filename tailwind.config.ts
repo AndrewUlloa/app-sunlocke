@@ -62,8 +62,9 @@ const config: Config = {
       zIndex: {
         'far-behind': '-2',
         'behind': '-1',
-      },
+      },  
       boxShadow: {
+        'text-shadow': ['2px 1px 3px rgba(255, 255, 255, 0.7)'],
         'red-card-default': ['0 4px 16px rgba(220, 68, 53, 0.5)'],
         'red-card-hover': ['0 4px 16px rgba(220, 68, 53, 0.75)'],
         'button-inner': 'inset 0 0.5px 4px rgba(212, 212, 212, 1)',
@@ -124,7 +125,7 @@ const config: Config = {
           '0px 4px 8px 0px rgba(126, 119, 41, 1.0)',
         ],
         'complex': '0px 0px 3px 0px rgba(255,255,255,0.5), 0px 0px 3px 0px rgba(255,255,255,0.5), 0px 0px 2.25px 0px rgba(255,255,255,0.7), 0px 0px 4.5px 0px rgba(255,255,255,0.9), 0px 0px 4.5px 0px #4d73c5, 0px 0px 3.75px 0px #2150b6, 0px 0px 4.125px 0px #1e48a4'
-      }
+      },
     }
   },
   plugins: []

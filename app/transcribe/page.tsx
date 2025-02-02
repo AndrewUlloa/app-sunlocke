@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   },
 }
 
+
+
 export default function TranscribePage() {
   return (
     <AnimatedBackground>

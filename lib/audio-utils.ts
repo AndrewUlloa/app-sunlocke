@@ -1,4 +1,4 @@
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB in bytes
 const CHUNK_DURATION = 10 * 60 // 10 minutes in seconds
@@ -98,7 +98,8 @@ export async function splitAudioIntoChunks(file: File): Promise<File[]> {
     return chunks
   } catch (error) {
     console.error("Error splitting audio:", error)
-    toast.error("Audio Processing Error", {
+    toast.error({
+      message: "Audio Processing Error",
       description: error instanceof Error ? error.message : "Failed to split audio file. Please try again."
     })
     throw error

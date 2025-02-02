@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Upload, FileText, Download, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { splitAudioIntoChunks } from "@/lib/audio-utils"
 
 const uploadAreaVariants = {
@@ -63,14 +63,16 @@ export function TranscriptionForm({
     
     const invalidFiles = selectedFiles.filter(file => !file.type.startsWith("audio/"))
     if (invalidFiles.length > 0) {
-      toast.error("Invalid file type(s)", {
+      toast.error({
+        message: "Invalid file type(s)",
         description: "Please select only valid audio files."
       })
       return
     }
 
     setFiles(prevFiles => [...prevFiles, ...selectedFiles])
-    toast.success("Files selected", {
+    toast.success({
+      message: "Files selected",
       description: `${selectedFiles.length} file(s) have been selected for transcription.`
     })
   }
@@ -93,14 +95,16 @@ export function TranscriptionForm({
     
     const invalidFiles = droppedFiles.filter(file => !file.type.startsWith("audio/"))
     if (invalidFiles.length > 0) {
-      toast.error("Invalid file type(s)", {
+      toast.error({
+        message: "Invalid file type(s)",
         description: "Please drop only valid audio files."
       })
       return
     }
 
     setFiles(prevFiles => [...prevFiles, ...droppedFiles])
-    toast.success("Files dropped", {
+    toast.success({
+      message: "Files dropped",
       description: `${droppedFiles.length} file(s) have been selected for transcription.`
     })
   }
@@ -116,13 +120,16 @@ export function TranscriptionForm({
     setUsedSummary(false)
     let allTranscriptions = ""
     
-    const loadingToastId = toast.loading("Processing audio files...")
+    const loadingToastId = toast.loading({
+      message: "Processing audio files..."
+    })
     
     try {
       // Process each file
       for (const file of files) {
         // Split into chunks if needed
-        toast.loading(`Splitting ${file.name} into chunks...`, {
+        toast.loading({
+          message: `Splitting ${file.name} into chunks...`,
           id: loadingToastId
         })
         const chunks = await splitAudioIntoChunks(file)
@@ -132,7 +139,8 @@ export function TranscriptionForm({
         const chunkTranscriptions = []
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i]
-          toast.loading(`Transcribing ${file.name} - Chunk ${i + 1}/${chunks.length}...`, {
+          toast.loading({
+            message: `Transcribing ${file.name} - Chunk ${i + 1}/${chunks.length}...`,
             id: loadingToastId
           })
           console.log(`Processing chunk ${i + 1}/${chunks.length} of ${file.name}`)
@@ -164,11 +172,14 @@ export function TranscriptionForm({
               return newText
             })
 
-            toast.success(`Completed chunk ${i + 1}/${chunks.length} of ${file.name}`)
+            toast.success({
+              message: `Completed chunk ${i + 1}/${chunks.length} of ${file.name}`
+            })
           } catch (error) {
             console.log(`Default route failed, trying Whisper fallback for chunk ${i + 1}...`, error)
             
-            toast.loading(`Using fallback service for ${file.name} - Chunk ${i + 1}...`, {
+            toast.loading({
+              message: `Using fallback service for ${file.name} - Chunk ${i + 1}...`,
               id: loadingToastId
             })
 
@@ -198,7 +209,9 @@ export function TranscriptionForm({
               return newText
             })
 
-            toast.success(`Completed chunk ${i + 1}/${chunks.length} of ${file.name} (Fallback)`)
+            toast.success({
+              message: `Completed chunk ${i + 1}/${chunks.length} of ${file.name} (Fallback)`
+            })
           }
         }
         
@@ -207,14 +220,17 @@ export function TranscriptionForm({
         if (allTranscriptions) allTranscriptions += "\n\n"
         allTranscriptions += `[${file.name}]\n${fileTranscription}`
 
-        toast.success(`Completed processing ${file.name}`)
+        toast.success({
+          message: `Completed processing ${file.name}`
+        })
       }
 
       // Set the final combined transcription
       setTranscription(allTranscriptions)
 
       // Process the complete transcription with the extract API
-      toast.loading("Extracting actionable items...", {
+      toast.loading({
+        message: "Extracting actionable items...",
         id: loadingToastId
       })
 
@@ -235,14 +251,16 @@ export function TranscriptionForm({
       setActionableItems(extractionData.actionableItems)
       setUsedSummary(extractionData.usedSummary)
 
-      toast.success("Process complete", {
+      toast.success({
+        message: "Process complete",
         description: "Your audio files have been successfully transcribed and analyzed.",
         id: loadingToastId
       })
     } catch (error) {
       console.error("Error during process:", error)
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred"
-      toast.error("Process failed", {
+      toast.error({
+        message: "Process failed",
         description: errorMessage,
         id: loadingToastId
       })
@@ -254,7 +272,9 @@ export function TranscriptionForm({
   const handleDownload = () => {
     if (!transcription) return
 
-    const loadingToastId = toast.loading("Preparing download...")
+    const loadingToastId = toast.loading({
+      message: "Preparing download..."
+    })
 
     try {
       const blob = new Blob([transcription], { type: "text/plain;charset=utf-8" })
@@ -267,13 +287,15 @@ export function TranscriptionForm({
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      toast.success("Transcription downloaded", {
+      toast.success({
+        message: "Transcription downloaded",
         description: "Your transcription has been downloaded as a text file.",
         id: loadingToastId
       })
     } catch (error) {
       console.error("Download error:", error)
-      toast.error("Download failed", {
+      toast.error({
+        message: "Download failed",
         description: "There was an error downloading the transcription.",
         id: loadingToastId
       })
