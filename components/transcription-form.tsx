@@ -65,7 +65,7 @@ export function TranscriptionForm({
     if (invalidFiles.length > 0) {
       toast.error({
         message: "Invalid file type(s)",
-        description: "Please select only valid audio files."
+        description: "Please upload only supported audio formats"
       })
       return
     }
@@ -97,7 +97,7 @@ export function TranscriptionForm({
     if (invalidFiles.length > 0) {
       toast.error({
         message: "Invalid file type(s)",
-        description: "Please drop only valid audio files."
+        description: "Please upload only supported audio formats"
       })
       return
     }
@@ -122,7 +122,7 @@ export function TranscriptionForm({
     
     const loadingToastId = toast.loading({
       message: "Processing audio files...",
-      description: "Your files are being prepared for transcription."
+      description: "Preparing audio files for processing"
     })
     
     try {
@@ -136,7 +136,7 @@ export function TranscriptionForm({
         if (chunks.length > 1) {
           toast.loading({
             message: `Splitting ${ordinal} file into chunks...`,
-            description: "Large audio files are being divided for optimal processing",
+            description: "Dividing large files for optimal processing",
             id: loadingToastId
           })
         }
@@ -187,7 +187,7 @@ export function TranscriptionForm({
             if (chunks.length > 1) {
               toast.success({
                 message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file`,
-                description: "Chunk successfully transcribed and processed"
+                description: "Chunk transcription completed successfully"
               })
             }
           } catch (error) {
@@ -197,7 +197,7 @@ export function TranscriptionForm({
             if (chunks.length > 1) {
               toast.loading({
                 message: `Using fallback service for chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
-                description: "Primary service unavailable. Using alternative transcription method",
+                description: "Alternative transcription method engaged",
                 id: loadingToastId
               })
             }
@@ -245,7 +245,7 @@ export function TranscriptionForm({
 
         toast.success({
           message: `Completed processing ${ordinal} file`,
-          description: "File successfully transcribed and processed."
+          description: "File successfully transcribed and processed"
         })
       }
 
@@ -255,8 +255,7 @@ export function TranscriptionForm({
       // Process the complete transcription with the extract API
       toast.loading({
         message: "Extracting actionable items...",
-        description: "Analyzing transcription to identify key tasks and information.",
-        id: loadingToastId
+        description: "Analyzing content to identify key tasks"
       })
 
       const extractionResponse = await fetch("/api/extract", {
@@ -278,8 +277,7 @@ export function TranscriptionForm({
 
       toast.success({
         message: "Process complete",
-        description: "Your audio files have been successfully transcribed and analyzed.",
-        id: loadingToastId
+        description: "Audio processed and analyzed successfully"
       })
     } catch (error) {
       console.error("Error during process:", error)
@@ -314,8 +312,7 @@ export function TranscriptionForm({
 
       toast.success({
         message: "Transcription downloaded",
-        description: "Your transcription has been downloaded as a text file.",
-        id: loadingToastId
+        description: "Transcription file saved successfully"
       })
     } catch (error) {
       console.error("Download error:", error)

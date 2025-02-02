@@ -88,7 +88,7 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
             {/* Information container outer */}
             <div className="flex flex-col pt-[8px] pb-[24px] px-[20px]">
               {/* Information container inner: text frame and info button */}
-              <div className="flex flex-row items-center justify-start gap-[10px]">
+              <div className="flex flex-row items-center justify-start gap-[10px] min-w-[31ch]">
                 {/* Icon button */}
                 <div
                   className="flex items-center justify-center bg-transparent border-0 cursor-pointer rounded-full antialiased"
