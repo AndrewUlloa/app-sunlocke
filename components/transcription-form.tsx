@@ -131,25 +131,30 @@ export function TranscriptionForm({
         const file = files[fileIndex]
         const ordinal = getOrdinalSuffix(fileIndex + 1) // 1st, 2nd, 3rd, etc.
 
-        // Split into chunks if needed
-        toast.loading({
-          message: `Splitting ${file.name} into chunks...`,
-          description: "Large audio files are being divided for optimal processing.",
-          id: loadingToastId
-        })
+        // Only show splitting message if there will be multiple chunks
         const chunks = await splitAudioIntoChunks(file)
-        console.log(`Processing ${file.name}: split into ${chunks.length} chunks`)
+        if (chunks.length > 1) {
+          toast.loading({
+            message: `Splitting ${ordinal} file into chunks...`,
+            description: "Large audio files are being divided for optimal processing",
+            id: loadingToastId
+          })
+        }
+        console.log(`Processing ${ordinal} file: split into ${chunks.length} chunks`)
         
         // Process each chunk sequentially
         const chunkTranscriptions = []
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i]
-          toast.loading({
-            message: `Transcribing chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
-            description: "Converting audio to text using AI transcription.",
-            id: loadingToastId
-          })
-          console.log(`Processing chunk ${i + 1}/${chunks.length} of ${file.name}`)
+          
+          // Only show chunk progress if there are multiple chunks
+          if (chunks.length > 1) {
+            toast.loading({
+              message: `Transcribing chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
+              description: "Converting audio to text using AI transcription",
+              id: loadingToastId
+            })
+          }
           
           // Try the default route first (transcribe)
           try {
@@ -178,18 +183,24 @@ export function TranscriptionForm({
               return newText
             })
 
-            toast.success({
-              message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file`,
-              description: "Chunk successfully transcribed and processed."
-            })
+            // Only show chunk completion if there are multiple chunks
+            if (chunks.length > 1) {
+              toast.success({
+                message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file`,
+                description: "Chunk successfully transcribed and processed"
+              })
+            }
           } catch (error) {
             console.log(`Default route failed, trying Whisper fallback for chunk ${i + 1}...`, error)
             
-            toast.loading({
-              message: `Using fallback service for chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
-              description: "Primary service unavailable. Using alternative transcription method.",
-              id: loadingToastId
-            })
+            // For fallback case, same logic applies
+            if (chunks.length > 1) {
+              toast.loading({
+                message: `Using fallback service for chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
+                description: "Primary service unavailable. Using alternative transcription method",
+                id: loadingToastId
+              })
+            }
 
             // If default route fails, try the Whisper fallback route
             const formData = new FormData()
@@ -217,10 +228,13 @@ export function TranscriptionForm({
               return newText
             })
 
-            toast.success({
-              message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file (Fallback)`,
-              description: "Fallback transcription completed."
-            })
+            // Only show fallback completion if there are multiple chunks
+            if (chunks.length > 1) {
+              toast.success({
+                message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file (Fallback)`,
+                description: "Fallback transcription completed"
+              })
+            }
           }
         }
         
