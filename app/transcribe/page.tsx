@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://app.sunlocke.com/transcribe",
+    url: "https://app.sunlocke.com/transcribe", 
     title: "Audio Transcription - Sun Locke",
     description: "Transcribe your audio files and extract actionable items",
     siteName: "Sun Locke",
@@ -24,8 +24,6 @@ export const metadata: Metadata = {
   },
 }
 
-
-
 export default function TranscribePage() {
   return (
     <AnimatedBackground>
@@ -38,4 +36,3 @@ export default function TranscribePage() {
     </AnimatedBackground>
   )
 }
-

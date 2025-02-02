@@ -121,15 +121,20 @@ export function TranscriptionForm({
     let allTranscriptions = ""
     
     const loadingToastId = toast.loading({
-      message: "Processing audio files..."
+      message: "Processing audio files...",
+      description: "Your files are being prepared for transcription."
     })
     
     try {
       // Process each file
-      for (const file of files) {
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const file = files[fileIndex]
+        const ordinal = getOrdinalSuffix(fileIndex + 1) // 1st, 2nd, 3rd, etc.
+
         // Split into chunks if needed
         toast.loading({
           message: `Splitting ${file.name} into chunks...`,
+          description: "Large audio files are being divided for optimal processing.",
           id: loadingToastId
         })
         const chunks = await splitAudioIntoChunks(file)
@@ -140,7 +145,8 @@ export function TranscriptionForm({
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i]
           toast.loading({
-            message: `Transcribing ${file.name} - Chunk ${i + 1}/${chunks.length}...`,
+            message: `Transcribing chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
+            description: "Converting audio to text using AI transcription.",
             id: loadingToastId
           })
           console.log(`Processing chunk ${i + 1}/${chunks.length} of ${file.name}`)
@@ -173,13 +179,15 @@ export function TranscriptionForm({
             })
 
             toast.success({
-              message: `Completed chunk ${i + 1}/${chunks.length} of ${file.name}`
+              message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file`,
+              description: "Chunk successfully transcribed and processed."
             })
           } catch (error) {
             console.log(`Default route failed, trying Whisper fallback for chunk ${i + 1}...`, error)
             
             toast.loading({
-              message: `Using fallback service for ${file.name} - Chunk ${i + 1}...`,
+              message: `Using fallback service for chunk ${i + 1}/${chunks.length} of ${ordinal} file...`,
+              description: "Primary service unavailable. Using alternative transcription method.",
               id: loadingToastId
             })
 
@@ -204,13 +212,14 @@ export function TranscriptionForm({
             chunkTranscriptions.push(fallbackData.combinedText)
             
             // Update progress in the UI
-            setTranscription(prev => {
+            setTranscriptions(prev => {
               const newText = prev + (prev ? "\n" : "") + `[Processing ${file.name} - Chunk ${i + 1}/${chunks.length} (Whisper Fallback)]\n` + fallbackData.combinedText
               return newText
             })
 
             toast.success({
-              message: `Completed chunk ${i + 1}/${chunks.length} of ${file.name} (Fallback)`
+              message: `Completed chunk ${i + 1}/${chunks.length} of ${ordinal} file (Fallback)`,
+              description: "Fallback transcription completed."
             })
           }
         }
@@ -221,7 +230,8 @@ export function TranscriptionForm({
         allTranscriptions += `[${file.name}]\n${fileTranscription}`
 
         toast.success({
-          message: `Completed processing ${file.name}`
+          message: `Completed processing ${ordinal} file`,
+          description: "File successfully transcribed and processed."
         })
       }
 
@@ -231,6 +241,7 @@ export function TranscriptionForm({
       // Process the complete transcription with the extract API
       toast.loading({
         message: "Extracting actionable items...",
+        description: "Analyzing transcription to identify key tasks and information.",
         id: loadingToastId
       })
 
@@ -300,6 +311,15 @@ export function TranscriptionForm({
         id: loadingToastId
       })
     }
+  }
+
+  const getOrdinalSuffix = (num: number): string => {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) return num + "st";
+    if (j === 2 && k !== 12) return num + "nd";
+    if (j === 3 && k !== 13) return num + "rd";
+    return num + "th";
   }
 
   return (
