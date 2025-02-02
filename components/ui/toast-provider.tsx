@@ -7,6 +7,7 @@ export function Toaster({ ...props }: ToasterProps) {
   return (
     <Sonner
       className="toaster group"
+      position="bottom-right"
       toastOptions={{
         classNames: {
           toast: "group toast group-[.toaster]:bg-transparent",
