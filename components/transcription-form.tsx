@@ -223,7 +223,7 @@ export function TranscriptionForm({
             chunkTranscriptions.push(fallbackData.combinedText)
             
             // Update progress in the UI
-            setTranscriptions(prev => {
+            setTranscription(prev => {
               const newText = prev + (prev ? "\n" : "") + `[Processing ${file.name} - Chunk ${i + 1}/${chunks.length} (Whisper Fallback)]\n` + fallbackData.combinedText
               return newText
             })
