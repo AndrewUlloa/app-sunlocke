@@ -10,22 +10,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export async function middleware(request: NextRequest) {
-  // Skip auth check for auth-related paths and static assets
-  if (
-    request.nextUrl.pathname.startsWith('/auth/') ||
-    request.nextUrl.pathname.startsWith('/_next/') ||
-    request.nextUrl.pathname.includes('.')
-  ) {
-    console.log("Middleware: Skipping auth check for:", request.nextUrl.pathname)
-    return NextResponse.next()
-  }
-
+  // Create a response object that we'll use to handle cookies
   const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
+  // Create the Supabase client
   const supabase = createServerClient(
     supabaseUrl,
     supabaseAnonKey,
@@ -53,12 +45,21 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
+    // Skip auth check for auth-related paths and static assets
+    if (
+      request.nextUrl.pathname.startsWith('/auth/') ||
+      request.nextUrl.pathname.startsWith('/_next/') ||
+      request.nextUrl.pathname.includes('.')
+    ) {
+      console.log("Middleware: Skipping auth check for:", request.nextUrl.pathname)
+      return response
+    }
+
     console.log("Middleware: Checking session for:", request.nextUrl.pathname)
     const { data: { session }, error } = await supabase.auth.getSession()
     
     if (error) {
       console.error("Middleware: Session check error:", error)
-      // On error, allow the request but don't redirect
       return response
     }
 
@@ -81,8 +82,6 @@ export async function middleware(request: NextRequest) {
     return response
   } catch (error) {
     console.error("Middleware: Unexpected error:", error)
-    // If there's an error checking the session, allow the request to continue
-    // This prevents redirect loops during auth state transitions
     return response
   }
 }

@@ -73,6 +73,14 @@ export default function AuthCallbackPage() {
 
         // Success! Redirect to app
         console.log("Authentication successful, redirecting to /transcribe...")
+        
+        // Show success toast
+        toast.success({
+          message: "Successfully signed in",
+          description: "Welcome back!"
+        })
+
+        // Force a hard redirect to ensure we get to the right page
         window.location.replace("/transcribe")
       } catch (err) {
         console.error("Auth callback error:", err)
@@ -91,6 +99,7 @@ export default function AuthCallbackPage() {
       }
     }
 
+    // Call the handler immediately
     handleCallback()
   }, [router, supabase])
 
