@@ -45,7 +45,14 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    // Skip auth check for auth-related paths and static assets
+    // Special handling for callback path
+    if (request.nextUrl.pathname === '/auth/callback') {
+      console.log("Middleware: Processing auth callback...")
+      // Allow the callback to process without interference
+      return response
+    }
+
+    // Skip auth check for static assets and other auth paths
     if (
       request.nextUrl.pathname.startsWith('/auth/') ||
       request.nextUrl.pathname.startsWith('/_next/') ||

@@ -71,17 +71,29 @@ export default function AuthCallbackPage() {
           throw new Error('No session established')
         }
 
-        // Success! Redirect to app
+        // Success! Show toast and redirect
         console.log("Authentication successful, redirecting to /transcribe...")
         
-        // Show success toast
         toast.success({
           message: "Successfully signed in",
           description: "Welcome back!"
         })
 
-        // Force a hard redirect to ensure we get to the right page
-        window.location.replace("/transcribe")
+        // Refresh the router to ensure the session is recognized
+        router.refresh()
+
+        // Use a small delay to ensure the session is properly established
+        setTimeout(() => {
+          // Try multiple redirect methods to ensure it works
+          try {
+            router.push("/transcribe")
+            // Also update the URL to avoid staying on the callback page
+            window.history.replaceState({}, '', "/transcribe")
+          } catch (e) {
+            console.log("Router push failed, using location.replace...")
+            window.location.replace("/transcribe")
+          }
+        }, 500)
       } catch (err) {
         console.error("Auth callback error:", err)
         toast.error({
