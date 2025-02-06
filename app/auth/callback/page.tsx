@@ -89,8 +89,9 @@ export default function AuthCallbackPage() {
             router.push("/transcribe")
             // Also update the URL to avoid staying on the callback page
             window.history.replaceState({}, '', "/transcribe")
-          } catch (e) {
-            console.log("Router push failed, using location.replace...")
+          } catch (routerError) {
+            console.log("Router push failed:", routerError)
+            console.log("Falling back to window.location.replace...")
             window.location.replace("/transcribe")
           }
         }, 500)
