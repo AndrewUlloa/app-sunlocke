@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Cleaning up auth state change listener...")
       subscription?.unsubscribe()
     }
-  }, [handleAuthChange]) // Only depend on the stable callback
+  }, [handleAuthChange, pathname]) // Include pathname in the dependency array
 
   return children
 } 

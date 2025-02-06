@@ -49,27 +49,17 @@ export default function AuthCallbackPage() {
         // Success! Redirect to app
         console.log("Authentication successful, redirecting to /transcribe...")
         
-        // Try both methods of redirection
-        try {
-          router.push("/transcribe")
-        } catch (routerError) {
-          console.log("Router push failed, using window.location...")
-          window.location.href = "/transcribe"
-        }
+        // Use window.location for hard redirect
+        window.location.href = "/transcribe"
       } catch (err) {
         console.error("Auth callback error:", err)
         toast.error({
           message: "Authentication failed",
           description: err instanceof Error ? err.message : "Please try again"
         })
-
-        // Try both methods of redirection
-        try {
-          router.push("/")
-        } catch (routerError) {
-          console.log("Router push failed, using window.location...")
-          window.location.href = "/"
-        }
+        
+        // Use window.location for hard redirect on error
+        window.location.href = "/"
       }
     }
 
