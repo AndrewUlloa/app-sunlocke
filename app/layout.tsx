@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toast-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 // Tobias fonts
 const tobiasLight = localFont({
@@ -100,8 +101,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fontVariables} antialiased`}>
-        {children}
-        <Toaster />
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

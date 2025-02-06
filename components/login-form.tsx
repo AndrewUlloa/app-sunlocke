@@ -1,12 +1,45 @@
+"use client"
+
+import { createClient } from "@/lib/client"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
+import { toast } from "@/lib/toast"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const supabase = createClient()
+
+  const handleGoogleLogin = async () => {
+    try {
+      toast.loading({
+        message: "Redirecting to Google...",
+        description: "Please wait while we connect you"
+      })
+
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          skipBrowserRedirect: true,
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      }).then(({ data, error }) => {
+        if (error) throw error
+        if (!data.url) throw new Error("No OAuth URL returned")
+        window.location.href = data.url
+      })
+    } catch (err) {
+      console.error("Login error:", err)
+      toast.error({
+        message: "Login failed",
+        description: err instanceof Error ? err.message : "Please try again"
+      })
+    }
+  }
+
   return (
     <div className={cn("flex flex-col", className)} {...props}>
       <Card className="bg-transparent shadow-red-card-default transition ease-in-out duration-[400ms] hover:shadow-red-card-hover">
@@ -23,6 +56,7 @@ export function LoginForm({
           <Button 
             variant="default"
             size="default"
+            onClick={handleGoogleLogin}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
               <path
@@ -47,7 +81,6 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-
     </div>
   )
 }

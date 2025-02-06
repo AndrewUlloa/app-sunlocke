@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { TranscriptionForm } from "@/components/transcription-form"
 import { AnimatedBackground } from "@/components/ui/animated-background"
 import { Header } from "@/components/ui/header"
+import { AppLayout } from "@/components/layouts/app-layout"
 
 export const metadata: Metadata = {
   title: "Audio Transcription - Sun Locke",
@@ -27,12 +28,14 @@ export const metadata: Metadata = {
 export default function TranscribePage() {
   return (
     <AnimatedBackground>
+      <AppLayout>
       <div className="min-h-[100dvh] container mx-auto flex flex-col justify-center">
         <Header />
         <div className="flex-1 w-full flex items-center justify-center">
-          <TranscriptionForm />
+            <TranscriptionForm />
+          </div>
         </div>
-      </div>
-    </AnimatedBackground>
+      </AppLayout>
+</AnimatedBackground>
   )
 }
