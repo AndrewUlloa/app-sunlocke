@@ -20,17 +20,22 @@ export function LoginForm({
         description: "Please wait while we connect you"
       })
 
-      await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
-      }).then(({ data, error }) => {
-        if (error) throw error
-        if (!data.url) throw new Error("No OAuth URL returned")
-        window.location.href = data.url
       })
+
+      if (error) throw error
+      if (!data.url) throw new Error("No OAuth URL returned")
+
+      // Redirect to the authorization URL
+      window.location.href = data.url
     } catch (err) {
       console.error("Login error:", err)
       toast.error({

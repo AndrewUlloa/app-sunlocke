@@ -13,11 +13,19 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         console.log("Starting auth callback handler...")
+        console.log("Current URL:", window.location.href)
         
         // Get the auth code from the URL
         const code = new URLSearchParams(window.location.search).get('code')
-        console.log("Auth code from URL:", code ? "Found" : "Not found")
+        const error = new URLSearchParams(window.location.search).get('error')
+        const errorDescription = new URLSearchParams(window.location.search).get('error_description')
         
+        console.log("URL Parameters:", { code: code ? "Found" : "Not found", error, errorDescription })
+        
+        if (error || errorDescription) {
+          throw new Error(errorDescription || error || 'OAuth error occurred')
+        }
+
         if (!code) {
           throw new Error('No code found in URL')
         }
@@ -48,8 +56,6 @@ export default function AuthCallbackPage() {
 
         // Success! Redirect to app
         console.log("Authentication successful, redirecting to /transcribe...")
-        
-        // Use window.location for hard redirect
         window.location.href = "/transcribe"
       } catch (err) {
         console.error("Auth callback error:", err)
@@ -58,12 +64,13 @@ export default function AuthCallbackPage() {
           description: err instanceof Error ? err.message : "Please try again"
         })
         
-        // Use window.location for hard redirect on error
-        window.location.href = "/"
+        // Delay the redirect slightly to ensure the error toast is shown
+        setTimeout(() => {
+          window.location.href = "/"
+        }, 2000)
       }
     }
 
-    // Call the handler immediately
     handleCallback()
   }, [router, supabase])
 
