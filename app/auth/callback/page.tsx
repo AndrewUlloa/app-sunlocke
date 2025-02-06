@@ -12,15 +12,24 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        const fullUrl = window.location.href
         console.log("Starting auth callback handler...")
-        console.log("Current URL:", window.location.href)
+        console.log("Full callback URL:", fullUrl)
+        
+        // Get all URL parameters for debugging
+        const params = Object.fromEntries(new URLSearchParams(window.location.search))
+        console.log("All URL parameters:", params)
         
         // Get the auth code from the URL
-        const code = new URLSearchParams(window.location.search).get('code')
-        const error = new URLSearchParams(window.location.search).get('error')
-        const errorDescription = new URLSearchParams(window.location.search).get('error_description')
+        const code = params.code
+        const error = params.error
+        const errorDescription = params.error_description
         
-        console.log("URL Parameters:", { code: code ? "Found" : "Not found", error, errorDescription })
+        console.log("Auth parameters:", { 
+          code: code ? "Present" : "Missing",
+          error: error || "None",
+          errorDescription: errorDescription || "None"
+        })
         
         if (error || errorDescription) {
           throw new Error(errorDescription || error || 'OAuth error occurred')
@@ -33,20 +42,28 @@ export default function AuthCallbackPage() {
         // Exchange the code for a session
         console.log("Exchanging auth code for session...")
         const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        console.log("Exchange result:", exchangeError ? "Error" : "Success", exchangeData ? "Data present" : "No data")
+        console.log("Exchange response:", {
+          success: !exchangeError,
+          hasData: !!exchangeData,
+          error: exchangeError?.message || "None"
+        })
         
         if (exchangeError) {
-          console.error("Exchange error:", exchangeError)
+          console.error("Exchange error details:", exchangeError)
           throw exchangeError
         }
 
         // Get the session to verify it worked
         console.log("Verifying session...")
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        console.log("Session check result:", sessionError ? "Error" : "Success", session ? "Session exists" : "No session")
+        console.log("Session verification:", {
+          success: !sessionError,
+          hasSession: !!session,
+          error: sessionError?.message || "None"
+        })
         
         if (sessionError) {
-          console.error("Session error:", sessionError)
+          console.error("Session error details:", sessionError)
           throw sessionError
         }
 
@@ -56,7 +73,7 @@ export default function AuthCallbackPage() {
 
         // Success! Redirect to app
         console.log("Authentication successful, redirecting to /transcribe...")
-        window.location.href = "/transcribe"
+        window.location.replace("/transcribe")
       } catch (err) {
         console.error("Auth callback error:", err)
         toast.error({
@@ -64,9 +81,12 @@ export default function AuthCallbackPage() {
           description: err instanceof Error ? err.message : "Please try again"
         })
         
+        // Log the error for debugging
+        console.error("Full error details:", err)
+        
         // Delay the redirect slightly to ensure the error toast is shown
         setTimeout(() => {
-          window.location.href = "/"
+          window.location.replace("/")
         }, 2000)
       }
     }

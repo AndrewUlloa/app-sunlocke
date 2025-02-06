@@ -20,10 +20,19 @@ export function LoginForm({
         description: "Please wait while we connect you"
       })
 
+      // Get the current hostname
+      const hostname = window.location.hostname
+      // Construct the redirect URL ensuring it matches exactly what's in Supabase
+      const redirectUrl = hostname.includes('localhost')
+        ? 'http://localhost:3000/auth/callback'
+        : `https://app.sunlocke.com/auth/callback`
+
+      console.log("Using redirect URL:", redirectUrl)
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -34,6 +43,7 @@ export function LoginForm({
       if (error) throw error
       if (!data.url) throw new Error("No OAuth URL returned")
 
+      console.log("Received auth URL:", data.url)
       // Redirect to the authorization URL
       window.location.href = data.url
     } catch (err) {
