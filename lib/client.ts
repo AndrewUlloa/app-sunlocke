@@ -11,6 +11,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const createClient = () => {
   return createBrowserClient(
     supabaseUrl,
-    supabaseAnonKey
+    supabaseAnonKey,
+    {
+      persistSession: true,
+      autoRefreshToken: true,
+    }
   )
 } 

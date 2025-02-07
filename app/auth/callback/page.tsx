@@ -10,27 +10,32 @@ export default function AuthCallbackPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    // Only run if a code parameter exists
+    if (!params.has("code")) {
+      return
+    }
+
     const handleCallback = async () => {
       try {
-        const fullUrl = window.location.href
         console.log("Starting auth callback handler...")
-        console.log("Full callback URL:", fullUrl)
-        
+        console.log("Full callback URL:", window.location.href)
+
         // Get all URL parameters for debugging
-        const params = Object.fromEntries(new URLSearchParams(window.location.search))
-        console.log("All URL parameters:", params)
-        
+        const allParams = Object.fromEntries(params)
+        console.log("All URL parameters:", allParams)
+
         // Get the auth code from the URL
-        const code = params.code
-        const error = params.error
-        const errorDescription = params.error_description
-        
+        const code = params.get("code")
+        const error = params.get("error")
+        const errorDescription = params.get("error_description")
+
         console.log("Auth parameters:", { 
           code: code ? "Present" : "Missing",
           error: error || "None",
           errorDescription: errorDescription || "None"
         })
-        
+
         if (error || errorDescription) {
           throw new Error(errorDescription || error || 'OAuth error occurred')
         }
@@ -47,7 +52,7 @@ export default function AuthCallbackPage() {
           hasData: !!exchangeData,
           error: exchangeError?.message || "None"
         })
-        
+
         if (exchangeError) {
           console.error("Exchange error details:", exchangeError)
           throw exchangeError
@@ -61,7 +66,7 @@ export default function AuthCallbackPage() {
           hasSession: !!session,
           error: sessionError?.message || "None"
         })
-        
+
         if (sessionError) {
           console.error("Session error details:", sessionError)
           throw sessionError
@@ -73,46 +78,33 @@ export default function AuthCallbackPage() {
 
         // Success! Show toast and redirect
         console.log("Authentication successful, redirecting to /transcribe...")
-        
         toast.success({
           message: "Successfully signed in",
           description: "Welcome back!"
         })
 
+        // Clear query parameters immediately
+        window.history.replaceState({}, '', "/transcribe")
+
         // Refresh the router to ensure the session is recognized
         router.refresh()
 
-        // Use a small delay to ensure the session is properly established
-        setTimeout(() => {
-          // Try multiple redirect methods to ensure it works
-          try {
-            router.push("/transcribe")
-            // Also update the URL to avoid staying on the callback page
-            window.history.replaceState({}, '', "/transcribe")
-          } catch (routerError) {
-            console.log("Router push failed:", routerError)
-            console.log("Falling back to window.location.replace...")
-            window.location.replace("/transcribe")
-          }
-        }, 500)
+        // Use router push as well
+        router.push("/transcribe")
       } catch (err) {
         console.error("Auth callback error:", err)
         toast.error({
           message: "Authentication failed",
           description: err instanceof Error ? err.message : "Please try again"
         })
-        
-        // Log the error for debugging
-        console.error("Full error details:", err)
-        
-        // Delay the redirect slightly to ensure the error toast is shown
+
+        // Delay the redirect slightly so the error toast is visible
         setTimeout(() => {
           window.location.replace("/")
         }, 2000)
       }
     }
 
-    // Call the handler immediately
     handleCallback()
   }, [router, supabase])
 
