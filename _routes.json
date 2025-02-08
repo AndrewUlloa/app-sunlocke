@@ -6,8 +6,7 @@
   "exclude": [
     "/build/*",
     "/_next/*",
-    "/api/*",
-    "/static/*"
+    "/api/*"
   ],
   "routes": [
     {
