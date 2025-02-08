@@ -6,3 +6,6 @@ command = "npm run build"
 
 [site]
 bucket = ".next"
+
+[functions]
+directory = "functions"
