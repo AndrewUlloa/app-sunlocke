@@ -10,7 +10,9 @@ export default function AuthCallbackPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    console.log("Callback page mounted")
     const params = new URLSearchParams(window.location.search)
+    console.log("URL params:", Object.fromEntries(params))
     // Only run if a code parameter exists
     if (!params.has("code")) {
       return

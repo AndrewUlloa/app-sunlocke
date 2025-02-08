@@ -15,13 +15,5 @@ const nextConfig = {
     })
     return config
   },
-  async rewrites() {
-    return [
-      {
-        source: '/auth/callback',
-        destination: '/auth/callback',
-      },
-    ]
-  },
 };
 export default nextConfig;
