@@ -22,7 +22,6 @@ export function LoginForm({
 
       // Determine the proper redirect URL
       const hostname = window.location.hostname
-      const protocol = window.location.protocol
       const redirectUrl = hostname.includes("localhost")
         ? "http://localhost:3000/auth/callback"
         : `https://epmesvguboyffspuhvrk.supabase.co/auth/v1/callback`  // Use Supabase's callback URL
