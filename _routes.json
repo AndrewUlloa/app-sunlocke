@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/build/*",
+    "/_next/*",
+    "/api/*",
+    "/static/*"
+  ],
+  "routes": [
+    {
+      "src": "/auth/callback",
+      "dest": "/auth/callback"
+    }
+  ]
+} 
