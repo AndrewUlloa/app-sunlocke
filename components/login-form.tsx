@@ -22,9 +22,10 @@ export function LoginForm({
 
       // Determine the proper redirect URL
       const hostname = window.location.hostname
+      const protocol = window.location.protocol
       const redirectUrl = hostname.includes("localhost")
         ? "http://localhost:3000/auth/callback"
-        : "https://app.sunlocke.com/auth/callback"
+        : `${protocol}//${hostname}/auth/callback`
 
       console.log("Using redirect URL:", redirectUrl)
 
