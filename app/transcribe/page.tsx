@@ -29,13 +29,13 @@ export default function TranscribePage() {
   return (
     <AnimatedBackground>
       <div className="min-h-[100dvh] container mx-auto flex flex-col">
-        <div className="flex justify-between items-center py-4">
+        <div className="py-4">
           <Header />
-          <UserAvatarMenu />
         </div>
         <div className="flex-1 w-full flex items-center justify-center">
           <TranscriptionForm />
         </div>
+        <UserAvatarMenu />
       </div>
     </AnimatedBackground>
   )
