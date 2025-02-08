@@ -25,7 +25,9 @@ export function LoginForm({
       const protocol = window.location.protocol
       const redirectUrl = hostname.includes("localhost")
         ? "http://localhost:3000/auth/callback"
-        : `${protocol}//${hostname}/auth/callback`
+        : hostname.includes("pages.dev")
+          ? `${protocol}//${hostname}/auth/callback`  // Preview deployment URL
+          : "https://app.sunlocke.com/auth/callback"  // Production URL
 
       console.log("Using redirect URL:", redirectUrl)
 
