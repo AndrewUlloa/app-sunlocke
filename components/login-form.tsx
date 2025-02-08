@@ -24,7 +24,7 @@ export function LoginForm({
       const hostname = window.location.hostname
       const redirectUrl = hostname.includes("localhost")
         ? "http://localhost:3000/auth/callback"
-        : `https://epmesvguboyffspuhvrk.supabase.co/auth/v1/callback`  // Use Supabase's callback URL
+        : "https://app.sunlocke.com/auth/callback"
 
       console.log("Using redirect URL:", redirectUrl)
 
