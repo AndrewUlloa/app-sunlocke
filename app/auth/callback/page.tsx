@@ -27,7 +27,7 @@ export default function AuthCallbackPage() {
         
         // Exchange the code for a session
         console.log("Exchanging auth code for session...")
-        const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code!)
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code!)
         
         if (exchangeError) {
           throw exchangeError
@@ -53,7 +53,7 @@ export default function AuthCallbackPage() {
           // First try Next.js navigation
           router.push("/transcribe")
           router.refresh()
-        } catch (navError) {
+        } catch {
           console.log("Router navigation failed, using window.location...")
           // Fallback to window.location
           window.location.href = "/transcribe"
