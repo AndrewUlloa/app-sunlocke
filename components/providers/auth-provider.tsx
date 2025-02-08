@@ -14,13 +14,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const showWelcomeToast = useCallback(async () => {
     if (hasShownWelcomeToast.current) return
+    hasShownWelcomeToast.current = true
 
     try {
       const { data: { user } } = await supabase.current.auth.getUser()
       if (user) {
-        // Get user's name from metadata or email
         const name = user.user_metadata?.full_name || 
-                    user.user_metadata?.name || // Fallback for Google OAuth
+                    user.user_metadata?.name || 
                     user.email?.split('@')[0] || 
                     'there'
                     
@@ -28,10 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           message: "Welcome back!",
           description: `Great to see you again, ${name}!`
         })
-        hasShownWelcomeToast.current = true
       }
     } catch (error) {
       console.error("Error showing welcome toast:", error)
+      hasShownWelcomeToast.current = false
     }
   }, [])
 
@@ -40,12 +40,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (event === "SIGNED_IN") {
       console.log("Handling SIGNED_IN event...")
-      if (pathname === "/") {
+      // Only show welcome toast and redirect if not already on transcribe page
+      if (pathname !== "/transcribe") {
         router.push("/transcribe")
+        // Only show welcome toast for fresh sign-ins
+        if (!hasShownWelcomeToast.current) {
+          setTimeout(showWelcomeToast, 500)
+        }
       }
-      showWelcomeToast()
     } else if (event === "SIGNED_OUT") {
       console.log("Handling SIGNED_OUT event...")
+      hasShownWelcomeToast.current = false
       toast.success({
         message: "Successfully signed out",
         description: "Come back soon!"
@@ -55,39 +60,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, router, showWelcomeToast])
 
   useEffect(() => {
-    console.log("Initializing auth provider...")
-
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.current.auth.onAuthStateChange(handleAuthChange)
 
-    // Check initial session
+    // Check initial session only for page loads (not auth state changes)
     const checkSession = async () => {
-      console.log("Checking initial session...")
       const { data: { session } } = await supabase.current.auth.getSession()
-      console.log("Initial session:", session ? "exists" : "none")
-
-      if (session && !hasShownWelcomeToast.current) {
-        showWelcomeToast()
-      }
+      console.log("Initial session check:", session ? "exists" : "none")
 
       if (!session && pathname !== "/" && !pathname.startsWith('/auth/')) {
-        console.log("No session found, redirecting to root...")
         toast.custom({
           message: "Session expired",
           description: "Please sign in to continue",
           variant: "error"
         })
         window.location.replace("/")
+      } else if (session && pathname === "/") {
+        // Redirect to transcribe if on root
+        router.push("/transcribe")
+      } else if (session && !hasShownWelcomeToast.current && pathname === "/transcribe") {
+        // Only show welcome toast on transcribe page for session restores
+        showWelcomeToast()
       }
     }
     
     checkSession()
 
     return () => {
-      console.log("Cleaning up auth state change listener...")
       subscription?.unsubscribe()
     }
-  }, [handleAuthChange, pathname, showWelcomeToast])
+  }, [handleAuthChange, pathname, router, showWelcomeToast])
 
   return children
 } 
