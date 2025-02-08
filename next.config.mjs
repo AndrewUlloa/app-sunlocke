@@ -14,7 +14,14 @@ const nextConfig = {
       use: { loader: 'file-loader' }
     })
     return config
-  }
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/auth/callback',
+        destination: '/auth/callback',
+      },
+    ]
+  },
 };
-
 export default nextConfig;
