@@ -100,7 +100,7 @@ Notes:
         model: "deepseek-r1-distill-llama-70b",
         temperature: 1,
         top_p: 1,
-        stream: false,
+        stream: true,
       }),
     })
 

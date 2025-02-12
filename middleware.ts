@@ -9,6 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your environment configuration.')
 }
 
+// Define public routes that don't require authentication
+const publicRoutes = ['/', '/auth/login', '/auth/signup']
+
 export async function middleware(request: NextRequest) {
   // Create a response object that we'll use to handle cookies
   const response = NextResponse.next({
@@ -45,20 +48,13 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
-    // Special handling for callback path
-    if (request.nextUrl.pathname === '/auth/callback') {
-      console.log("Middleware: Processing auth callback...")
-      // Allow the callback to process without interference
-      return response
-    }
-
-    // Skip auth check for static assets and other auth paths
+    // Skip middleware for specific paths
     if (
-      request.nextUrl.pathname.startsWith('/auth/') ||
       request.nextUrl.pathname.startsWith('/_next/') ||
-      request.nextUrl.pathname.includes('.')
+      request.nextUrl.pathname.startsWith('/api/') ||
+      request.nextUrl.pathname.includes('.') ||
+      request.nextUrl.pathname === '/auth/callback'
     ) {
-      console.log("Middleware: Skipping auth check for:", request.nextUrl.pathname)
       return response
     }
 
@@ -70,20 +66,28 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
-    // If user is not signed in and the current path is not /,
-    // redirect the user to /
-    if (!session && request.nextUrl.pathname !== "/") {
-      console.log("Middleware: No session, redirecting to /")
-      const redirectUrl = new URL('/', request.url)
-      return NextResponse.redirect(redirectUrl)
+    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname)
+
+    // Handle authenticated users
+    if (session) {
+      // If authenticated user tries to access public routes, redirect to dashboard
+      if (isPublicRoute || request.nextUrl.pathname === '/transcribe') {
+        console.log("Middleware: Authenticated user accessing public route, redirecting to /dashboard")
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      // Allow access to protected routes
+      return response
     }
 
-    // If user is signed in and the current path is /,
-    // redirect the user to /transcribe
-    if (session && request.nextUrl.pathname === "/") {
-      console.log("Middleware: Session exists, redirecting to /transcribe")
-      const redirectUrl = new URL('/transcribe', request.url)
-      return NextResponse.redirect(redirectUrl)
+    // Handle non-authenticated users
+    if (!session) {
+      // Allow access to public routes
+      if (isPublicRoute) {
+        return response
+      }
+      // Redirect to home for protected routes
+      console.log("Middleware: Unauthenticated user accessing protected route, redirecting to /")
+      return NextResponse.redirect(new URL('/', request.url))
     }
 
     return response
@@ -101,8 +105,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - auth/callback (auth callback route)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|auth/callback).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 } 

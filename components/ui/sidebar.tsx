@@ -3,7 +3,8 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, Home, Database, Shield, HardDrive, Zap, Terminal, Settings, Users, Box, Activity, Grid } from "lucide-react"
+import { motion, HTMLMotionProps, MotionStyle } from "framer-motion"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -21,18 +22,34 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+const SIDEBAR_WIDTH = "240px"
+const SIDEBAR_WIDTH_MOBILE = "240px"
+const SIDEBAR_WIDTH_ICON = "48px"
+const SIDEBAR_KEYBOARD_SHORTCUT = "\\"
+
+const navigationItems = [
+  { icon: Home, label: "Home", href: "#" },
+  { icon: Database, label: "Database", href: "#" },
+  { icon: Shield, label: "Authentication", href: "#" },
+  { icon: HardDrive, label: "Storage", href: "#" },
+  { icon: Zap, label: "Edge Functions", href: "#" },
+  { icon: Terminal, label: "SQL Editor", href: "#" },
+  { icon: Settings, label: "Settings", href: "#" },
+  { icon: Users, label: "Team", href: "#" },
+  { icon: Box, label: "Logs", href: "#" },
+  { icon: Activity, label: "Monitoring", href: "#" },
+  { icon: Grid, label: "API Docs", href: "#" },
+]
 
 type SidebarContext = {
-  state: "expanded" | "collapsed"
+  state: "expanded" | "collapsed" | "hidden"
   open: boolean
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
+  isHovering: boolean
+  setIsHovering: (hovering: boolean) => void
   toggleSidebar: () => void
 }
 
@@ -49,10 +66,11 @@ function useSidebar() {
 
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & {
+  Omit<HTMLMotionProps<"div">, "animate" | "transition" | "style"> & {
     defaultOpen?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
+    style?: MotionStyle
   }
 >(
   (
@@ -69,6 +87,7 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [isHovering, setIsHovering] = React.useState(false)
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -105,6 +124,7 @@ const SidebarProvider = React.forwardRef<
         ) {
           event.preventDefault()
           toggleSidebar()
+          setIsHovering(false)
         }
       }
 
@@ -114,7 +134,11 @@ const SidebarProvider = React.forwardRef<
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
     // This makes it easier to style the sidebar with Tailwind classes.
-    const state = open ? "expanded" : "collapsed"
+    const state = React.useMemo(() => {
+      if (!open) return "hidden"
+      if (isHovering) return "expanded"
+      return "collapsed"
+    }, [open, isHovering])
 
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
@@ -124,31 +148,27 @@ const SidebarProvider = React.forwardRef<
         isMobile,
         openMobile,
         setOpenMobile,
+        isHovering,
+        setIsHovering,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [
+        state,
+        open,
+        setOpen,
+        isMobile,
+        openMobile,
+        setOpenMobile,
+        isHovering,
+        setIsHovering,
+        toggleSidebar,
+      ]
     )
 
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
-          <div
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
+          {children}
         </TooltipProvider>
       </SidebarContext.Provider>
     )
@@ -156,12 +176,36 @@ const SidebarProvider = React.forwardRef<
 )
 SidebarProvider.displayName = "SidebarProvider"
 
+const SidebarTriggerArea = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  const { setIsHovering } = useSidebar()
+
+  return (
+    <div
+      ref={ref}
+      data-sidebar="trigger-area"
+      className={cn(
+        "fixed left-0 top-0 bottom-0 w-16 z-20",
+        "hidden md:block",
+        className
+      )}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    />
+  )
+})
+SidebarTriggerArea.displayName = "SidebarTriggerArea"
+
 const Sidebar = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & {
+  Omit<HTMLMotionProps<"div">, "animate" | "transition" | "style"> & {
     side?: "left" | "right"
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
+    style?: MotionStyle
   }
 >(
   (
@@ -170,18 +214,23 @@ const Sidebar = React.forwardRef<
       variant = "sidebar",
       collapsible = "offcanvas",
       className,
+      style,
       children,
       ...props
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, setIsHovering } = useSidebar()
+
+    // Handle hover interactions
+    const handleMouseEnter = () => setIsHovering(true)
+    const handleMouseLeave = () => setIsHovering(false)
 
     if (collapsible === "none") {
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
           ref={ref}
@@ -206,54 +255,107 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
     }
 
+    const sidebarStyle = {
+      width: state === "expanded" ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON,
+      ...style
+    } as const
+
     return (
-      <div
-        ref={ref}
-        className="group peer hidden md:block text-sidebar-foreground"
-        data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""}
-        data-variant={variant}
-        data-side={side}
-      >
-        {/* This is what handles the sidebar gap on desktop */}
-        <div
+      <>
+        <SidebarTriggerArea />
+        <motion.div
+          ref={ref}
+          style={sidebarStyle}
           className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
-          )}
-        />
-        <div
-          className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
-            side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
-            variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            "fixed left-0 z-30 hidden md:flex",
+            "bottom-0",
+            "overflow-hidden",
+            "bg-white/75 backdrop-blur-xl border-r border-neutral-200/50",
+            state === "collapsed" && "rounded-r-lg",
+            state === "hidden" && "invisible opacity-0",
+            variant === "floating" || variant === "inset" ? "p-2" : "",
             className
           )}
+          initial={false}
+          animate={{
+            width: state === "expanded" ? SIDEBAR_WIDTH : SIDEBAR_WIDTH_ICON,
+            x: state === "hidden" ? -SIDEBAR_WIDTH_ICON : 0,
+            opacity: state === "hidden" ? 0 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            ease: "easeInOut"
+          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
           {...props}
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className={cn(
+              "flex w-full flex-col",
+              "bg-transparent",
+              variant === "floating" && "rounded-lg border shadow-sm",
+            )}
           >
-            {children}
+            <div className="flex flex-col gap-1 p-2">
+              {navigationItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <React.Fragment key={item.label}>
+                    {state === "expanded" ? (
+                      <Button
+                        variant="ghost"
+                        size="default"
+                        className={cn(
+                          "h-8 justify-start px-2",
+                          "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/40",
+                          "rounded-md transition-colors duration-200"
+                        )}
+                      >
+                        <Icon className="h-[16px] w-[16px] shrink-0" />
+                        <span className="ml-2 text-sm font-medium truncate">{item.label}</span>
+                      </Button>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="default"
+                            className={cn(
+                              "h-8 w-8 p-0 flex items-center justify-center",
+                              "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/40",
+                              "rounded-md transition-colors duration-200"
+                            )}
+                          >
+                            <Icon className="h-[16px] w-[16px]" />
+                            <span className="sr-only">{item.label}</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="right" 
+                          className="font-normal text-xs bg-neutral-800 text-neutral-200"
+                          sideOffset={8}
+                        >
+                          {item.label}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </React.Fragment>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </>
     )
   }
 )
@@ -322,7 +424,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-white dark:bg-neutral-950",
+        "relative flex flex-1 flex-col bg-white dark:bg-neutral-950",
         "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
@@ -404,7 +506,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       {...props}
@@ -460,7 +562,7 @@ const SidebarGroupAction = React.forwardRef<
       ref={ref}
       data-sidebar="group-action"
       className={cn(
-        "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "absolute right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
@@ -759,5 +861,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  SidebarTriggerArea,
   useSidebar,
 }
