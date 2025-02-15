@@ -43,8 +43,17 @@ const demoNotifications: Notification[] = [
 export function NotificationsModal() {
   const [notifications, setNotifications] = React.useState(demoNotifications)
   const [open, setOpen] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 1024px)")
   const unreadCount = notifications.filter((n) => !n.read).length
+
+  // Only show content after hydration
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Return null during SSR and initial render
+  if (!mounted) return null
 
   const markAsRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
@@ -97,7 +106,7 @@ export function NotificationsModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-start relative">
+        <Button variant="ghost" className="w-full justify-start relative">
           <Bell className="mr-2 h-4 w-4" />
           Notifications
           {unreadCount > 0 && (

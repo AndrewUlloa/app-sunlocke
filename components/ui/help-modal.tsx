@@ -11,7 +11,16 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 
 export function HelpModal() {
   const [open, setOpen] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 1024px)")
+
+  // Only show content after hydration
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Return null during SSR and initial render
+  if (!mounted) return null
 
   const content = (
     <div className="space-y-6">
@@ -37,7 +46,7 @@ export function HelpModal() {
         <p className="text-xs text-gray-500">
           Expected response time is based on your billing plan. Projects on paid plans are prioritized.
         </p>
-        <Button className="w-full" size="sm">
+        <Button className="w-full" variant="outline">
           Contact Support
         </Button>
       </div>
@@ -54,7 +63,7 @@ export function HelpModal() {
         </div>
 
         <div className="space-y-2">
-          <Button variant="outline" size="sm" className="w-full justify-between">
+          <Button variant="outline" className="w-full justify-between">
             Join Discord server
             <ArrowUpRight className="h-4 w-4" />
           </Button>
@@ -108,7 +117,7 @@ export function HelpModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-start">
+        <Button variant="ghost" className="w-full justify-start">
           <HelpCircle className="mr-2 h-4 w-4" />
           Help
         </Button>

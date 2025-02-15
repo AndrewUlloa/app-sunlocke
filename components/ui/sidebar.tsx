@@ -276,7 +276,7 @@ const Sidebar = React.forwardRef<
             "fixed left-0 z-30 hidden md:flex",
             "bottom-0",
             "overflow-hidden",
-            "bg-white/75 backdrop-blur-xl border-r border-neutral-200/50",
+            "bg-white/75 backdrop-blur-xl border-r-lg border-neutral-200/50",
             state === "collapsed" && "rounded-r-lg",
             state === "hidden" && "invisible opacity-0",
             variant === "floating" || variant === "inset" ? "p-2" : "",
