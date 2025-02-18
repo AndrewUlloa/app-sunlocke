@@ -13,7 +13,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const publicRoutes = ['/', '/auth/login', '/auth/signup', '/test-d2']
 
 // Define protected routes that shouldn't redirect to /transcribe
-const noRedirectRoutes = ['/test-rls']
+const noRedirectRoutes = ['/test-d2']
 
 export async function middleware(request: NextRequest) {
   // Create a response object that we'll use to handle cookies
