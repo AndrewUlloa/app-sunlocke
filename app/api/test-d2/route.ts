@@ -24,6 +24,7 @@ interface Transcription {
   storage_path: string;
   status: string;
 }
+export const runtime = 'edge'
 
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
