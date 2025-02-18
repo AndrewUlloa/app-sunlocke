@@ -6,6 +6,9 @@ import { createClient } from "@/lib/client"
 import { toast } from "@/lib/toast"
 import { Session } from '@supabase/supabase-js'
 
+// Define protected routes that shouldn't redirect to /transcribe
+const noRedirectRoutes = ['/test-rls']
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -40,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (event === "SIGNED_IN") {
       console.log("Handling SIGNED_IN event...")
-      // Only show welcome toast and redirect if not already on transcribe page
-      if (pathname !== "/transcribe") {
+      // Only redirect if not on a no-redirect route and not already on transcribe page
+      if (!noRedirectRoutes.includes(pathname) && pathname !== "/transcribe") {
         router.push("/transcribe")
         // Only show welcome toast for fresh sign-ins
         if (!hasShownWelcomeToast.current) {
@@ -74,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           variant: "error"
         })
         window.location.replace("/")
-      } else if (session && pathname === "/") {
-        // Redirect to transcribe if on root
+      } else if (session && pathname === "/" && !noRedirectRoutes.includes(pathname)) {
+        // Redirect to transcribe if on root and not a no-redirect route
         router.push("/transcribe")
       } else if (session && !hasShownWelcomeToast.current && pathname === "/transcribe") {
         // Only show welcome toast on transcribe page for session restores
