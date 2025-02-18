@@ -51,7 +51,7 @@ export const toast = {
         </g>
         <defs>
           <filter id="filter0_d_1382_5098" x="0" y="0" width="22" height="22" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feFlood floodOpacitycity="0" result="BackgroundImageFix"/>
+            <feFlood floodOpacity="0" result="BackgroundImageFix"/>
             <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
             <feOffset dx="2" dy="1"/>
             <feGaussianBlur stdDeviation="1.5"/>
