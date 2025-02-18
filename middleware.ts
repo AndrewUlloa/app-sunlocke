@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Define public routes that don't require authentication
-const publicRoutes = ['/', '/auth/login', '/auth/signup']
+const publicRoutes = ['/', '/auth/login', '/auth/signup', '/test-d2']
 
 // Define protected routes that shouldn't redirect to /transcribe
 const noRedirectRoutes = ['/test-rls']
