@@ -1,12 +1,10 @@
 export type MarketingChannel = 
-  | 'Email Marketing'
+  | 'Email List'
+  | 'Events/Webinars'
+  | 'Paid Ads'
+  | 'Partnership/Referral'
   | 'Social Media'
-  | 'Content Marketing'
-  | 'SEO'
-  | 'PPC Advertising'
-  | 'Influencer Marketing'
-  | 'Video Marketing'
-  | 'Affiliate Marketing';
+  | 'Website';
 
 export type Parameter = 
   | 'awareness'
@@ -56,19 +54,23 @@ export interface Scores {
 }
 
 export interface Report {
-  id: string;
-  quizResponseId: string;
   insights: string;
   recommendations: string[];
-  timestamp: string;
+}
+
+export interface QuestionResponse {
+  questionId: string;
+  questionText: string;
+  selectedOptionId: string;
+  selectedOptionText: string;
 }
 
 export interface QuizResponse {
   id: string;
   visitorInfo: VisitorInfo;
   selectedChannels: MarketingChannel[];
-  responses: Record<string, string>;
-  scores: Scores;
+  scores: Record<Parameter, ParameterScore>;
   timestamp: string;
-  report?: Report;
+  report: Report | null;
+  responses: QuestionResponse[];
 } 

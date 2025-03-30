@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { QuizResponse } from '@/lib/types';
+import { QuizResponse, MarketingChannel, Parameter, ParameterScore } from '@/lib/types';
 import { toast } from '@/lib/toast';
 
 interface PaginationInfo {
@@ -16,6 +16,73 @@ interface ResponsesData {
   pagination: PaginationInfo;
 }
 
+// Add helper functions
+const normalizeChannelName = (channel: string): MarketingChannel => {
+  const mapping: Record<string, MarketingChannel> = {
+    'email': 'Email Marketing',
+    'social': 'Social Media',
+    'content': 'Content Marketing',
+    'seo': 'SEO'
+  };
+  return mapping[channel.toLowerCase()] || channel as MarketingChannel;
+};
+
+const organizeScores = (scores: Record<Parameter, ParameterScore>) => {
+  const categories = {
+    engagement: ['awareness', 'engagement'],
+    communication: ['communication', 'credibility'],
+    strategy: ['strategy', 'retention']
+  };
+  
+  return Object.entries(categories).map(([category, params]) => ({
+    category,
+    scores: params.map(param => ({
+      parameter: param,
+      score: scores[param as Parameter] || 0
+    }))
+  }));
+};
+
+const generateInsights = (scores: Record<Parameter, ParameterScore>, channels: MarketingChannel[]): string => {
+  const highestScore = Math.max(...Object.values(scores));
+  const strongestAreas = Object.entries(scores)
+    .filter(([_, score]) => score >= highestScore - 10)
+    .map(([param]) => param);
+  
+  return `Strong performance in ${strongestAreas.join(', ')}. Selected ${channels.length} marketing channels for implementation.`;
+};
+
+const generateRecommendations = (scores: Record<Parameter, ParameterScore>, channels: MarketingChannel[]): string[] => {
+  const recommendations: string[] = [];
+  
+  // Add channel-specific recommendations
+  channels.forEach(channel => {
+    switch(channel) {
+      case 'Email Marketing':
+        recommendations.push('Implement automated email nurture campaigns');
+        break;
+      case 'Social Media':
+        recommendations.push('Develop consistent social media content calendar');
+        break;
+      case 'Content Marketing':
+        recommendations.push('Create comprehensive content strategy');
+        break;
+      case 'SEO':
+        recommendations.push('Focus on technical SEO optimization');
+        break;
+    }
+  });
+
+  // Add score-based recommendations
+  Object.entries(scores).forEach(([param, score]) => {
+    if (score < 70) {
+      recommendations.push(`Improve ${param} through targeted training and resources`);
+    }
+  });
+
+  return recommendations;
+};
+
 export default function AdminPage() {
   const [data, setData] = useState<ResponsesData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +92,7 @@ export default function AdminPage() {
   // Add refs to track request state
   const fetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const initialLoadRef = useRef(false);
 
   const fetchResponses = useCallback(async () => {
     // Prevent duplicate requests
@@ -60,13 +128,26 @@ export default function AdminPage() {
         throw new Error('Failed to fetch responses');
       }
       
-      const newData = await response.json();
-      setData(newData);
+      const data: ResponsesData = await response.json();
+      // Transform and normalize the data
+      const transformedData = {
+        ...data,
+        responses: data.responses.map(response => ({
+          ...response,
+          selectedChannels: response.selectedChannels.map(normalizeChannelName),
+          report: response.report || {
+            insights: generateInsights(response.scores, response.selectedChannels),
+            recommendations: generateRecommendations(response.scores, response.selectedChannels)
+          }
+        }))
+      };
+      setData(transformedData);
       setError(null);
     } catch (err) {
       // Only set error if not aborted
       if (err instanceof Error && err.name !== 'AbortError') {
         const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+        console.error('Error fetching responses:', err);
         setError(errorMessage);
         toast.error({ message: 'Failed to fetch responses', description: errorMessage });
       }
@@ -76,14 +157,21 @@ export default function AdminPage() {
     }
   }, [currentPage]);
 
-  // Initialize auth credentials on first load
+  // Initialize auth credentials and fetch data on first load
   useEffect(() => {
-    if (!localStorage.getItem('adminAuth')) {
-      const authHeader = 'admin:marketing2024'
-      const base64Auth = btoa(authHeader)
-      localStorage.setItem('adminAuth', base64Auth)
+    if (!initialLoadRef.current) {
+      initialLoadRef.current = true;
+      
+      if (!localStorage.getItem('adminAuth')) {
+        const authHeader = 'admin:marketing2024'
+        const base64Auth = btoa(authHeader)
+        localStorage.setItem('adminAuth', base64Auth)
+      }
+
+      // Initial data fetch
+      fetchResponses();
     }
-  }, []);
+  }, [fetchResponses]);
 
   // Set up visibility change handler with debouncing
   useEffect(() => {
@@ -111,16 +199,25 @@ export default function AdminPage() {
     };
   }, [fetchResponses]);
 
-  // Initial fetch and page change handler
+  // Handle page changes
   useEffect(() => {
     fetchResponses();
-  }, [fetchResponses]);
+  }, [currentPage, fetchResponses]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 p-8">
+      <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Loading...</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Quiz Responses</h1>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -128,94 +225,159 @@ export default function AdminPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 p-8">
+      <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">Error</h1>
-          <p className="text-red-600">{error}</p>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Quiz Responses</h1>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-red-600">
+              <h2 className="text-lg font-semibold mb-2">Error Loading Responses</h2>
+              <p>{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.responses?.length) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Quiz Responses</h1>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-gray-500 text-center py-4">No responses found.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Quiz Responses</h1>
-        
-        {data?.responses.map((response) => (
-          <div key={response.id} className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Visitor Information</h2>
-                <p><span className="font-medium">Name:</span> {response.visitorInfo.firstName} {response.visitorInfo.lastName}</p>
-                <p><span className="font-medium">Email:</span> {response.visitorInfo.email}</p>
-                <p><span className="font-medium">Industry:</span> {response.visitorInfo.industry}</p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Selected Channels</h2>
-                <ul className="list-disc list-inside">
-                  {response.selectedChannels.map((channel) => (
-                    <li key={channel}>{channel}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold mb-2">Scores</h2>
-              <div className="grid grid-cols-3 gap-4">
-                {Object.entries(response.scores).map(([metric, score]) => (
-                  <div key={metric} className="bg-gray-50 p-4 rounded">
-                    <p className="font-medium capitalize">{metric}</p>
-                    <p className="text-2xl font-bold">{score.toString()}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {response.report && (
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Report</h2>
-                <div className="bg-gray-50 p-4 rounded">
-                  <h3 className="font-medium mb-2">Insights</h3>
-                  <p className="mb-4">{response.report.insights}</p>
-                  <h3 className="font-medium mb-2">Recommendations</h3>
-                  <ul className="list-disc list-inside">
-                    {response.report.recommendations.map((rec: string, index: number) => (
-                      <li key={index}>{rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            <p className="text-sm text-gray-500 mt-4">
-              Submitted on: {new Date(response.timestamp).toLocaleString()}
-            </p>
-          </div>
-        ))}
-
-        {data && data.pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Quiz Responses</h1>
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            <span className="px-4 py-2">
+            <span className="text-sm text-gray-700">
               Page {currentPage} of {data.pagination.totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(data.pagination.totalPages, prev + 1))}
               disabled={currentPage === data.pagination.totalPages}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
-        )}
+        </div>
+
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="divide-y divide-gray-200">
+            {data.responses.map((response) => (
+              <div key={response.id} className="p-6 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {response.visitorInfo.firstName} {response.visitorInfo.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-500">{response.visitorInfo.email}</p>
+                    <p className="text-sm text-gray-500">Industry: {response.visitorInfo.industry}</p>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {new Date(response.timestamp).toLocaleString()}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Selected Channels</h4>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {response.selectedChannels.map((channel) => (
+                      <span
+                        key={channel}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                      >
+                        {channel}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {response.responses && response.responses.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">Question Responses</h4>
+                    <div className="mt-2 space-y-4">
+                      {response.responses.map((qResponse, index) => (
+                        <div key={qResponse.questionId} className="bg-gray-50 rounded-lg p-4">
+                          <p className="text-sm font-medium text-gray-900">
+                            Question {index + 1}: {qResponse.questionText}
+                          </p>
+                          <p className="mt-2 text-sm text-gray-600">
+                            Selected: {qResponse.selectedOptionText}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Scores</h4>
+                  <div className="mt-2 space-y-4">
+                    {organizeScores(response.scores).map(({ category, scores }) => (
+                      <div key={category} className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700 capitalize">{category}</h5>
+                        <div className="grid grid-cols-2 gap-4">
+                          {scores.map(({ parameter, score }) => (
+                            <div key={parameter} className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500 capitalize">{parameter}</span>
+                              <div className="flex items-center">
+                                <div className="w-32 h-2 bg-gray-200 rounded mr-2">
+                                  <div 
+                                    className="h-2 bg-blue-600 rounded" 
+                                    style={{ width: `${score}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-medium text-gray-900">{score}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {response.report && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">Report</h4>
+                    <p className="mt-2 text-sm text-gray-500">{response.report.insights}</p>
+                    {response.report.recommendations.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-sm font-medium text-gray-900">Recommendations</h5>
+                        <ul className="mt-2 list-disc list-inside space-y-1">
+                          {response.report.recommendations.map((rec, index) => (
+                            <li key={index} className="text-sm text-gray-500">{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
