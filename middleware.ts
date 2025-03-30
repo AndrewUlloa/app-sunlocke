@@ -48,7 +48,6 @@ export async function middleware(request: NextRequest) {
     // Special handling for callback path
     if (request.nextUrl.pathname === '/auth/callback') {
       console.log("Middleware: Processing auth callback...")
-      // Allow the callback to process without interference
       return response
     }
 
@@ -60,6 +59,28 @@ export async function middleware(request: NextRequest) {
     ) {
       console.log("Middleware: Skipping auth check for:", request.nextUrl.pathname)
       return response
+    }
+
+    // Handle admin routes separately
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      console.log("Middleware: Checking admin auth for:", request.nextUrl.pathname)
+      const basicAuth = request.headers.get('authorization')
+
+      if (basicAuth) {
+        const authValue = basicAuth.split(' ')[1]
+        const [user, pwd] = atob(authValue).split(':')
+
+        if (user === 'admin' && pwd === 'marketing2024') {
+          return response
+        }
+      }
+
+      return new NextResponse('Authentication required', {
+        status: 401,
+        headers: {
+          'WWW-Authenticate': 'Basic realm="Secure Area"',
+        },
+      })
     }
 
     console.log("Middleware: Checking session for:", request.nextUrl.pathname)
@@ -86,29 +107,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    // Only protect /admin routes
-    if (!request.nextUrl.pathname.startsWith('/admin')) {
-      return response
-    }
-
-    const basicAuth = request.headers.get('authorization');
-
-    if (basicAuth) {
-      const authValue = basicAuth.split(' ')[1];
-      const [user, pwd] = atob(authValue).split(':');
-
-      // Use environment variables for credentials in production
-      if (user === 'admin' && pwd === 'marketing2024') {
-        return response
-      }
-    }
-
-    return new NextResponse('Authentication required', {
-      status: 401,
-      headers: {
-        'WWW-Authenticate': 'Basic realm="Secure Area"',
-      },
-    });
+    return response
   } catch (error) {
     console.error("Middleware: Unexpected error:", error)
     return response
@@ -125,6 +124,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - auth/callback (auth callback route)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|auth/callback).*)',
+    '/((?!_next/static|_next/image|favicon.ico|auth/callback|api/).*)',
   ],
 } 

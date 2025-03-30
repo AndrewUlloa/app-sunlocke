@@ -18,7 +18,19 @@ interface D1Row {
 
 export async function GET(request: Request) {
   try {
-    const D1_DATABASE_ID = process.env.D1_DATABASE_ID || '5d861285-afcf-488f-beaa-be3dc0ed15ea';
+    const D1_DATABASE_ID = process.env.D1_DATABASE_ID;
+    const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
+    const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+
+    if (!D1_DATABASE_ID || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
+      console.error('Missing required environment variables:', {
+        hasD1Id: !!D1_DATABASE_ID,
+        hasApiToken: !!CLOUDFLARE_API_TOKEN,
+        hasAccountId: !!CLOUDFLARE_ACCOUNT_ID
+      });
+      throw new Error('Missing required environment variables');
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -40,38 +52,63 @@ export async function GET(request: Request) {
       FROM quiz_responses
     `;
 
+    console.log('Fetching responses with params:', { page, limit, offset });
+
     const [responsesResult, countResult] = await Promise.all([
-      fetch('https://api.cloudflare.com/client/v4/d1/query', {
+      fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`
+          'X-Auth-Email': 'andrew@sunlocke.com',
+          'X-Auth-Key': CLOUDFLARE_API_TOKEN
         },
         body: JSON.stringify({
-          database_id: D1_DATABASE_ID,
-          query,
+          sql: query,
           params: [limit, offset]
         })
       }),
-      fetch('https://api.cloudflare.com/client/v4/d1/query', {
+      fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`
+          'X-Auth-Email': 'andrew@sunlocke.com',
+          'X-Auth-Key': CLOUDFLARE_API_TOKEN
         },
         body: JSON.stringify({
-          database_id: D1_DATABASE_ID,
-          query: countQuery
+          sql: countQuery
         })
       })
     ]);
 
     if (!responsesResult.ok || !countResult.ok) {
-      throw new Error('Failed to fetch responses');
+      const responseError = await responsesResult.text();
+      const countError = await countResult.text();
+      console.error('D1 API Error:', {
+        responsesStatus: responsesResult.status,
+        responsesError: responseError,
+        countStatus: countResult.status,
+        countError: countError
+      });
+      throw new Error('Failed to fetch from D1 database');
     }
 
     const responses = await responsesResult.json();
     const count = await countResult.json();
+
+    if (!responses.success || !count.success) {
+      console.error('D1 Query Error:', {
+        responsesError: responses.error,
+        countError: count.error
+      });
+      throw new Error('D1 query failed');
+    }
+
+    console.log('Successfully fetched responses:', {
+      count: responses.result.length,
+      total: count.result[0].total
+    });
 
     return NextResponse.json({
       responses: responses.result.map((row: D1Row) => ({
@@ -99,9 +136,9 @@ export async function GET(request: Request) {
       }
     });
   } catch (error) {
-    console.error('Error fetching responses:', error);
+    console.error('Error in GET /api/responses:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch responses' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred' },
       { status: 500 }
     );
   }
@@ -109,7 +146,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const D1_DATABASE_ID = process.env.D1_DATABASE_ID || '5d861285-afcf-488f-beaa-be3dc0ed15ea';
+    const D1_DATABASE_ID = process.env.D1_DATABASE_ID;
+    const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
+    const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+
+    if (!D1_DATABASE_ID || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
+      throw new Error('Missing required environment variables');
+    }
+
     const body = await request.json();
     const quizResponse: QuizResponse = body.response;
     const report: Report | undefined = body.report;
@@ -129,15 +173,15 @@ export async function POST(request: Request) {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    await fetch('https://api.cloudflare.com/client/v4/d1/query', {
+    const responseResult = await fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`
+        'X-Auth-Email': 'andrew@sunlocke.com',
+        'X-Auth-Key': CLOUDFLARE_API_TOKEN
       },
       body: JSON.stringify({
-        database_id: D1_DATABASE_ID,
-        query: responseQuery,
         params: [
           quizResponse.id,
           quizResponse.visitorInfo.firstName,
@@ -148,9 +192,16 @@ export async function POST(request: Request) {
           JSON.stringify(quizResponse.responses),
           JSON.stringify(quizResponse.scores),
           new Date().toISOString()
-        ]
+        ],
+        sql: responseQuery
       })
     });
+
+    if (!responseResult.ok) {
+      const error = await responseResult.text();
+      console.error('Failed to store quiz response:', error);
+      throw new Error('Failed to store quiz response');
+    }
 
     // If there's a report, store it and send email
     if (report) {
@@ -164,24 +215,31 @@ export async function POST(request: Request) {
         ) VALUES (?, ?, ?, ?, ?)
       `;
 
-      await fetch('https://api.cloudflare.com/client/v4/d1/query', {
+      const reportResult = await fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`
+          'X-Auth-Email': 'andrew@sunlocke.com',
+          'X-Auth-Key': CLOUDFLARE_API_TOKEN
         },
         body: JSON.stringify({
-          database_id: D1_DATABASE_ID,
-          query: reportQuery,
           params: [
             report.id,
             report.quizResponseId,
             report.insights,
             JSON.stringify(report.recommendations),
             new Date().toISOString()
-          ]
+          ],
+          sql: reportQuery
         })
       });
+
+      if (!reportResult.ok) {
+        const error = await reportResult.text();
+        console.error('Failed to store report:', error);
+        throw new Error('Failed to store report');
+      }
 
       // Send email notification
       try {
@@ -194,9 +252,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error storing quiz response:', error);
+    console.error('Error in POST /api/responses:', error);
     return NextResponse.json(
-      { error: 'Failed to store quiz response' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred' },
       { status: 500 }
     );
   }
