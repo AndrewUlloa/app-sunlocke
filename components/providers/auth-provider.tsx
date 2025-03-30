@@ -5,16 +5,17 @@ import { useRouter, usePathname } from "next/navigation"
 import { createClient } from "@/lib/client"
 import { toast } from "@/lib/toast"
 import { Session } from '@supabase/supabase-js'
+import { AuthChangeEvent } from "@supabase/supabase-js"
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = useRef(createClient())
   const hasShownWelcomeToast = useRef(false)
+  const initialSessionChecked = useRef(false)
 
   const showWelcomeToast = useCallback(async () => {
     if (hasShownWelcomeToast.current) return
-    hasShownWelcomeToast.current = true
 
     try {
       const { data: { user } } = await supabase.current.auth.getUser()
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           message: "Welcome back!",
           description: `Great to see you again, ${name}!`
         })
+        hasShownWelcomeToast.current = true
       }
     } catch (error) {
       console.error("Error showing welcome toast:", error)
@@ -35,20 +37,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const handleAuthChange = useCallback(async (event: string, session: Session | null) => {
+  const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log("Auth state changed:", event, "Session:", session ? "exists" : "none")
 
-    if (event === "SIGNED_IN") {
+    if (event === 'SIGNED_IN') {
       console.log("Handling SIGNED_IN event...")
-      // Only show welcome toast and redirect if not already on transcribe page
-      if (pathname !== "/transcribe") {
-        router.push("/transcribe")
-        // Only show welcome toast for fresh sign-ins
-        if (!hasShownWelcomeToast.current) {
-          setTimeout(showWelcomeToast, 500)
-        }
-      }
-    } else if (event === "SIGNED_OUT") {
+      showWelcomeToast()
+    } else if (event === 'SIGNED_OUT') {
       console.log("Handling SIGNED_OUT event...")
       hasShownWelcomeToast.current = false
       toast.success({
@@ -57,13 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       window.location.replace("/")
     }
-  }, [pathname, router, showWelcomeToast])
+  }, [showWelcomeToast])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.current.auth.onAuthStateChange(handleAuthChange)
 
-    // Check initial session only for page loads (not auth state changes)
+    // Check initial session only once and only for non-admin routes
     const checkSession = async () => {
+      if (initialSessionChecked.current || pathname.startsWith('/admin')) {
+        return
+      }
+
+      initialSessionChecked.current = true
       const { data: { session } } = await supabase.current.auth.getSession()
       console.log("Initial session check:", session ? "exists" : "none")
 

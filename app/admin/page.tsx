@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { QuizResponse } from '@/lib/types';
+import { toast } from '@/lib/toast';
 
 interface PaginationInfo {
   total: number;
@@ -20,27 +21,100 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Add refs to track request state
+  const fetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    fetchResponses();
-  }, [currentPage]);
+  const fetchResponses = useCallback(async () => {
+    // Prevent duplicate requests
+    if (fetchingRef.current) {
+      return;
+    }
 
-  const fetchResponses = async () => {
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+
     try {
+      fetchingRef.current = true;
       setLoading(true);
-      const response = await fetch(`/api/responses?page=${currentPage}&limit=10`);
+      
+      const headers = new Headers();
+      const storedAuth = localStorage.getItem('adminAuth');
+      if (storedAuth) {
+        headers.set('Authorization', `Basic ${storedAuth}`);
+      }
+      
+      const response = await fetch(`/api/responses?page=${currentPage}&limit=10`, {
+        headers,
+        credentials: 'include',
+        signal: abortControllerRef.current.signal
+      });
+      
       if (!response.ok) {
         throw new Error('Failed to fetch responses');
       }
-      const data = await response.json();
-      setData(data);
+      
+      const newData = await response.json();
+      setData(newData);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      // Only set error if not aborted
+      if (err instanceof Error && err.name !== 'AbortError') {
+        const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+        setError(errorMessage);
+        toast.error({ message: 'Failed to fetch responses', description: errorMessage });
+      }
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
     }
-  };
+  }, [currentPage]);
+
+  // Initialize auth credentials on first load
+  useEffect(() => {
+    if (!localStorage.getItem('adminAuth')) {
+      const authHeader = 'admin:marketing2024'
+      const base64Auth = btoa(authHeader)
+      localStorage.setItem('adminAuth', base64Auth)
+    }
+  }, []);
+
+  // Set up visibility change handler with debouncing
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Debounce the refresh to prevent multiple rapid requests
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          fetchResponses();
+        }, 300);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(timeoutId);
+      // Cleanup any in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [fetchResponses]);
+
+  // Initial fetch and page change handler
+  useEffect(() => {
+    fetchResponses();
+  }, [fetchResponses]);
 
   if (loading) {
     return (
