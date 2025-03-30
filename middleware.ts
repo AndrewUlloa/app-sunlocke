@@ -86,7 +86,29 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
-    return response
+    // Only protect /admin routes
+    if (!request.nextUrl.pathname.startsWith('/admin')) {
+      return response
+    }
+
+    const basicAuth = request.headers.get('authorization');
+
+    if (basicAuth) {
+      const authValue = basicAuth.split(' ')[1];
+      const [user, pwd] = atob(authValue).split(':');
+
+      // Use environment variables for credentials in production
+      if (user === 'admin' && pwd === 'marketing2024') {
+        return response
+      }
+    }
+
+    return new NextResponse('Authentication required', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Secure Area"',
+      },
+    });
   } catch (error) {
     console.error("Middleware: Unexpected error:", error)
     return response
