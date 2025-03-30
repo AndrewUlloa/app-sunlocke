@@ -1,3 +1,7 @@
+import { D1Database } from '@cloudflare/workers-types'
+import { NextResponse } from 'next/server'
+import { v4 as uuidv4 } from 'uuid'
+
 interface TestResult {
   success: boolean;
   message: string;
@@ -5,18 +9,6 @@ interface TestResult {
   error?: string;
 }
 
-interface PreparedStatement {
-  bind(...args: unknown[]): PreparedStatement;
-  all(): Promise<{ results: unknown[] }>;
-  run(): Promise<unknown>;
-  first(): Promise<unknown>;
-}
-
-interface D2Database {
-  prepare(query: string): PreparedStatement;
-}
-
-// Add Transcription interface
 interface Transcription {
   id: string;
   created_at: string;
@@ -24,15 +16,21 @@ interface Transcription {
   storage_path: string;
   status: string;
 }
+
 export const runtime = 'edge'
+export const preferredRegion = 'auto'
 
-import { NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
+export interface RequestWithEnv extends Request {
+  env?: {
+    DB: D1Database;
+  };
+}
 
-export async function GET(request: Request, context: { env?: { DB?: D2Database } }) {
+export async function GET(request: Request) {
+  const env = (request as RequestWithEnv).env;
   try {
     const testResults: Record<string, TestResult> = {};
-    let db = context.env?.DB;
+    let db = env?.DB as D1Database | undefined;
 
     // If DB connection is not provided, use a mock for local development
     if (!db) {
@@ -40,46 +38,40 @@ export async function GET(request: Request, context: { env?: { DB?: D2Database }
         // In-memory store for inserted transcriptions
         const mockTranscriptions: Record<string, Transcription> = {};
         
-        const mockDb: D2Database = {
-          prepare: (query: string) => {
-            // Extend the PreparedStatement with a boundArgs property
-            const ps = {} as PreparedStatement & { boundArgs: unknown[] };
-            ps.boundArgs = [];
-            ps.bind = function (...args: unknown[]) {
-              ps.boundArgs = args;
-              return ps;
-            };
-            ps.all = async () => {
-              if (query === "SELECT 1") {
-                return { results: [ { "1": 1 } ] };
-              } else if (query === "SELECT * FROM profiles") {
+        const mockDb = {
+          prepare: (query: string) => ({
+            bind: (...args: unknown[]) => ({
+              all: async () => {
+                if (query === "SELECT 1") {
+                  return { results: [{ "1": 1 }] };
+                } else if (query === "SELECT * FROM profiles") {
+                  return { results: [] };
+                }
                 return { results: [] };
+              },
+              run: async () => {
+                if (query.startsWith("INSERT INTO transcriptions")) {
+                  const [id, created_at, user_id, storage_path, status] = args;
+                  mockTranscriptions[id as string] = {
+                    id: id as string,
+                    created_at: created_at as string,
+                    user_id: user_id as string,
+                    storage_path: storage_path as string,
+                    status: status as string
+                  };
+                }
+                return { success: true };
+              },
+              first: async () => {
+                if (query.startsWith("SELECT * FROM transcriptions")) {
+                  return mockTranscriptions[args[0] as string] || null;
+                }
+                return null;
               }
-              return { results: [] };
-            };
-            ps.run = async () => {
-              if (query.startsWith("INSERT INTO transcriptions")) {
-                const transcriptionId = ps.boundArgs[0] as string;
-                mockTranscriptions[transcriptionId] = {
-                  id: transcriptionId,
-                  created_at: ps.boundArgs[1] as string,
-                  user_id: ps.boundArgs[2] as string,
-                  storage_path: ps.boundArgs[3] as string,
-                  status: ps.boundArgs[4] as string
-                };
-              }
-              return {};
-            };
-            ps.first = async () => {
-              if (query.startsWith("SELECT * FROM transcriptions")) {
-                const transcriptionId = (ps.boundArgs && ps.boundArgs[0]) as string;
-                return mockTranscriptions[transcriptionId] || null;
-              }
-              return null;
-            };
-            return ps;
-          }
-        };
+            })
+          })
+        } as unknown as D1Database;
+        
         db = mockDb;
       } else {
         return NextResponse.json({
@@ -92,23 +84,14 @@ export async function GET(request: Request, context: { env?: { DB?: D2Database }
 
     // Test 1: Basic DB connectivity test using a simple SELECT 1 query
     try {
-      const connectivityResult = await db.prepare('SELECT 1').all();
-      // Check if the first column's value is 1
-      const row = connectivityResult.results[0];
-      const value = row ? Object.values(row)[0] : null;
-      if (value === 1) {
-        testResults['connectivity'] = {
-          success: true,
-          message: 'DB connectivity established',
-          data: connectivityResult
-        };
-      } else {
-        testResults['connectivity'] = {
-          success: false,
-          message: 'Unexpected result from SELECT 1',
-          data: connectivityResult
-        };
-      }
+      const { results } = await db.prepare('SELECT 1').bind().all();
+      const value = results[0] ? Object.values(results[0])[0] : null;
+      
+      testResults['connectivity'] = {
+        success: value === 1,
+        message: value === 1 ? 'DB connectivity established' : 'Unexpected result from SELECT 1',
+        data: { results }
+      };
     } catch (error) {
       testResults['connectivity'] = {
         success: false,
@@ -119,11 +102,11 @@ export async function GET(request: Request, context: { env?: { DB?: D2Database }
 
     // Test 2: Read all profiles from profiles table
     try {
-      const profiles = await db.prepare('SELECT * FROM profiles').all();
+      const { results } = await db.prepare('SELECT * FROM profiles').bind().all();
       testResults['read_profiles'] = {
         success: true,
         message: 'Read profiles successfully',
-        data: profiles
+        data: { results }
       };
     } catch (error) {
       testResults['read_profiles'] = {
@@ -133,33 +116,44 @@ export async function GET(request: Request, context: { env?: { DB?: D2Database }
       };
     }
 
-    // Test 3: Write test: Insert a dummy transcription record, then read it back
+    // Test 3: Write test: Insert a dummy profile and transcription
+    const userId = uuidv4();
     const transcriptionId = uuidv4();
     try {
-      await db.prepare('INSERT INTO transcriptions (id, created_at, user_id, storage_path, status) VALUES (?, ?, ?, ?, ?)')
-        .bind(transcriptionId, new Date().toISOString(), 'test_user', 'test.mp3', 'pending')
+      // First create a profile
+      const { success: profileSuccess } = await db
+        .prepare('INSERT INTO profiles (id, user_id, email) VALUES (?, ?, ?)')
+        .bind(userId, userId, 'test@example.com')
         .run();
 
-      const inserted = await db.prepare('SELECT * FROM transcriptions WHERE id = ?')
+      if (!profileSuccess) {
+        throw new Error('Failed to insert test profile');
+      }
+
+      // Then create a transcription linked to the profile
+      const { success: transcriptionSuccess } = await db
+        .prepare('INSERT INTO transcriptions (id, user_id, storage_path, status) VALUES (?, ?, ?, ?)')
+        .bind(transcriptionId, userId, 'test.mp3', 'pending')
+        .run();
+
+      if (!transcriptionSuccess) {
+        throw new Error('Failed to insert test transcription');
+      }
+
+      const result = await db
+        .prepare('SELECT t.*, p.email FROM transcriptions t JOIN profiles p ON t.user_id = p.user_id WHERE t.id = ?')
         .bind(transcriptionId)
         .first();
 
-      if (inserted) {
-        testResults['insert_transcription'] = {
-          success: true,
-          message: 'Successfully inserted and retrieved test transcription',
-          data: inserted
-        };
-      } else {
-        testResults['insert_transcription'] = {
-          success: false,
-          message: 'Inserted transcription not found.'
-        };
-      }
+      testResults['insert_transcription'] = {
+        success: !!result,
+        message: result ? 'Successfully inserted and retrieved test transcription with profile' : 'Inserted transcription not found',
+        data: result
+      };
     } catch (error) {
       testResults['insert_transcription'] = {
         success: false,
-        message: 'Failed to insert test transcription',
+        message: 'Failed to insert test data',
         error: error instanceof Error ? error.message : String(error)
       };
     }
@@ -168,7 +162,7 @@ export async function GET(request: Request, context: { env?: { DB?: D2Database }
 
     return NextResponse.json({
       success: overallSuccess,
-      message: overallSuccess ? 'Cloudflare D2 tests passed' : 'Cloudflare D2 tests failed',
+      message: overallSuccess ? 'D1 database tests passed' : 'D1 database tests failed',
       results: testResults
     });
   } catch (error) {

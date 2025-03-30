@@ -80,7 +80,7 @@ export async function middleware(request: NextRequest) {
         console.log("Middleware: Authenticated user accessing public route, redirecting to /transcribe")
         return NextResponse.redirect(new URL('/transcribe', request.url))
       }
-      // Allow access to protected routes
+      // Allow access to protected routes and no-redirect routes
       return response
     }
 
