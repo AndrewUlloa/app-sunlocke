@@ -20,13 +20,13 @@ class QuestionBank {
   }
 
   getBaselineQuestions(): Question[] {
-    return this.questions.filter(q => q.type === 'baseline').slice(0, 5);
+    return this.questions.filter(q => q.type === 'Baseline').slice(0, 5);
   }
 
   getCombinationQuestions(selectedChannels: MarketingChannel[]): Question[] {
     const combinationQuestions = this.questions.filter(q => {
-      if (q.type !== 'combination') return false;
-      return q.relevantChannels.every(channel => selectedChannels.includes(channel));
+      if (q.type !== 'Combination-Specific') return false;
+      return q.channels.every(channel => selectedChannels.includes(channel));
     });
     
     // Randomly select 5 combination questions
@@ -35,8 +35,8 @@ class QuestionBank {
 
   getChannelSpecificQuestions(selectedChannels: MarketingChannel[]): Question[] {
     const channelSpecificQuestions = this.questions.filter(q => {
-      if (q.type !== 'channel_specific') return false;
-      return q.relevantChannels.some(channel => selectedChannels.includes(channel));
+      if (q.type !== 'Singular') return false;
+      return q.channels.some(channel => selectedChannels.includes(channel));
     });
     
     // Randomly select 5 channel-specific questions
