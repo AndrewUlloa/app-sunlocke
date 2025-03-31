@@ -48,21 +48,27 @@ export default function QuizPage() {
         visitorInfo
       };
 
+      // Generate report first
       const generatedReport = await reportGenerator.generateReport(
         response.scores,
         response.selectedChannels,
         response.id
       );
 
-      // Store response and report in D1
+      // Create complete response with report
+      const completeResponse: QuizResponse = {
+        ...fullResponse,
+        report: generatedReport
+      };
+
+      // Store response in D1
       const storeResult = await fetch('/api/responses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          response: fullResponse,
-          report: generatedReport
+          response: completeResponse
         })
       });
 

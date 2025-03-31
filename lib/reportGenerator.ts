@@ -1,4 +1,4 @@
-import { ParameterScore, MarketingChannel, Report } from './types';
+import { Parameter, MarketingChannel, Report } from './types';
 
 export class ReportGenerator {
   private apiKey: string;
@@ -10,9 +10,9 @@ export class ReportGenerator {
   }
 
   async generateReport(
-    scores: ParameterScore[],
+    scores: Record<Parameter, number>,
     selectedChannels: MarketingChannel[],
-    quizResponseId: string
+    quizResponseId: number
   ): Promise<Report> {
     const prompt = this.constructPrompt(scores, selectedChannels);
     
@@ -28,7 +28,11 @@ export class ReportGenerator {
           messages: [
             {
               role: 'system',
-              content: 'You are a marketing expert analyzing diagnostic quiz results. Provide specific, actionable insights and recommendations based on the scores and channels used.'
+              content: `You are a marketing expert analyzing diagnostic quiz results. 
+              Provide specific, actionable insights and recommendations based on the scores and channels used.
+              Focus on practical, implementable solutions that consider the specific channels being used.
+              Keep insights concise and focused on key findings.
+              Provide 3-5 specific, actionable recommendations.`
             },
             {
               role: 'user',
@@ -46,52 +50,53 @@ export class ReportGenerator {
       const data = await response.json();
       const llmResponse = data.choices[0].message.content;
       
-      // Parse LLM response into structured format
-      const { insights, recommendations } = this.parseResponse(llmResponse);
-
-      return {
-        id: crypto.randomUUID(),
-        quizResponseId,
-        scores,
-        insights,
-        recommendations,
-        timestamp: new Date()
-      };
+      return this.parseResponse(llmResponse);
     } catch (error) {
       console.error('Error generating report:', error);
       throw error;
     }
   }
 
-  private constructPrompt(scores: ParameterScore[], channels: MarketingChannel[]): string {
+  private constructPrompt(scores: Record<Parameter, number>, channels: MarketingChannel[]): string {
     return `
       Analyze the following marketing diagnostic results:
 
       Channels in use: ${channels.join(', ')}
 
       Parameter Scores:
-      ${scores.map(s => `${s.parameter}: ${s.score} (${s.category})`).join('\n')}
+      ${Object.entries(scores)
+        .map(([parameter, score]) => `${parameter}: ${score}%`)
+        .join('\n')}
 
-      Please provide:
-      1. A detailed analysis of the current marketing performance
-      2. Specific areas of concern and their impact
-      3. 3-5 actionable recommendations for improvement
+      Based on these results:
+      1. Provide a concise summary of the current marketing performance and key areas of concern
+      2. List 3-5 specific, actionable recommendations for improvement
       
-      Focus on practical, implementable solutions that consider the specific channels being used.
+      Format your response as follows:
+      [Summary of insights]
+
+      Recommendations:
+      - [First recommendation]
+      - [Second recommendation]
+      - [Third recommendation]
+      etc.
     `;
   }
 
-  private parseResponse(response: string): { insights: string; recommendations: string[] } {
-    // Simple parsing logic - can be enhanced based on actual LLM response format
+  private parseResponse(response: string): Report {
     const sections = response.split('\n\n');
+    const insights = sections[0]?.trim() || 'Analysis not available';
     
+    const recommendations = sections
+      .slice(1)
+      .flatMap(s => s.split('\n'))
+      .filter(s => s.trim().startsWith('-') || s.trim().startsWith('•'))
+      .map(s => s.replace(/^[-•]\s*/, '').trim())
+      .filter(Boolean);
+
     return {
-      insights: sections[0] || '',
-      recommendations: sections
-        .slice(1)
-        .flatMap(s => s.split('\n'))
-        .filter(s => s.trim().startsWith('-') || s.trim().startsWith('•'))
-        .map(s => s.replace(/^[-•]\s*/, ''))
+      insights,
+      recommendations: recommendations.length > 0 ? recommendations : ['No specific recommendations available']
     };
   }
 } 
