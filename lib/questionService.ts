@@ -1,4 +1,4 @@
-import { Question, QuestionOption, MarketingChannel } from './types';
+import { Question, Option, MarketingChannel } from './types';
 
 export class QuestionService {
   private databaseId: string;
