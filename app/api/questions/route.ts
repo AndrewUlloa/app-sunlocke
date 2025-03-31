@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Question, Option } from '@/lib/types';
 
+export const runtime = 'edge';
+
 export async function GET() {
   try {
     const D1_DATABASE_ID = process.env.D1_DATABASE_ID || '5d861285-afcf-488f-beaa-be3dc0ed15ea';

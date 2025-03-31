@@ -9,6 +9,8 @@ interface ResponseBody {
   }>;
 }
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const body: ResponseBody = await request.json();

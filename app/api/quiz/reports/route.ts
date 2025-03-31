@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { executeD1Query } from '@/app/lib/db';
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const { session_id } = await request.json();

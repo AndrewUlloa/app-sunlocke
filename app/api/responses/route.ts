@@ -95,6 +95,8 @@ async function ensureTablesExist(accountId: string, dbId: string, token: string)
   }
 }
 
+export const runtime = 'edge';
+
 export async function GET(request: Request) {
   try {
     const D1_DATABASE_ID = process.env.D1_DATABASE_ID;
