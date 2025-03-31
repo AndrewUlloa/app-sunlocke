@@ -19,10 +19,10 @@ interface ResponsesData {
 // Add helper functions
 const normalizeChannelName = (channel: string): MarketingChannel => {
   const mapping: Record<string, MarketingChannel> = {
-    'email': 'Email Marketing',
+    'email': 'Email List',
     'social': 'Social Media',
-    'content': 'Content Marketing',
-    'seo': 'SEO'
+    'content': 'Website',
+    'seo': 'Website'
   };
   return mapping[channel.toLowerCase()] || channel as MarketingChannel;
 };
@@ -58,16 +58,16 @@ const generateRecommendations = (scores: Record<Parameter, ParameterScore>, chan
   // Add channel-specific recommendations
   channels.forEach(channel => {
     switch(channel) {
-      case 'Email Marketing':
+      case 'Email List':
         recommendations.push('Implement automated email nurture campaigns');
         break;
       case 'Social Media':
         recommendations.push('Develop consistent social media content calendar');
         break;
-      case 'Content Marketing':
+      case 'Website':
         recommendations.push('Create comprehensive content strategy');
         break;
-      case 'SEO':
+      case 'Paid Ads':
         recommendations.push('Focus on technical SEO optimization');
         break;
     }
