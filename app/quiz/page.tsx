@@ -6,7 +6,7 @@ import Report from '@/components/Report';
 import VisitorForm from '@/components/VisitorForm';
 import QuestionBank from '@/lib/questionBank';
 import { ReportGenerator } from '@/lib/reportGenerator';
-import { QuizResponse, Report as ReportType, VisitorInfo } from '@/lib/types';
+import { QuizResponse, Report as ReportType, VisitorInfo, Parameter } from '@/lib/types';
 
 const D1_DATABASE_ID = process.env.NEXT_PUBLIC_D1_DATABASE_ID || '5d861285-afcf-488f-beaa-be3dc0ed15ea';
 
@@ -17,6 +17,7 @@ const reportGenerator = new ReportGenerator(
 
 export default function QuizPage() {
   const [report, setReport] = useState<ReportType | null>(null);
+  const [scores, setScores] = useState<Record<Parameter, number> | null>(null);
   const [questionBank, setQuestionBank] = useState<QuestionBank | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +78,7 @@ export default function QuizPage() {
       }
 
       setReport(generatedReport);
+      setScores(response.scores);
     } catch (error) {
       console.error('Error completing quiz:', error);
       setError('Failed to generate report. Please try again.');
@@ -124,8 +126,8 @@ export default function QuizPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
-      {report ? (
-        <Report report={report} onRestart={handleRestart} />
+      {report && scores ? (
+        <Report report={report} scores={scores} onRestart={handleRestart} />
       ) : !visitorInfo ? (
         <VisitorForm onSubmit={handleVisitorSubmit} />
       ) : questionBank ? (

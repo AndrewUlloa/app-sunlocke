@@ -1,27 +1,38 @@
 'use client';
 
-import { Report as ReportType, ParameterScore } from '@/lib/types';
+import { Report as ReportType, Parameter } from '@/lib/types';
 
 interface ReportProps {
   report: ReportType;
+  scores: Record<Parameter, number>;
   onRestart: () => void;
 }
 
-export default function Report({ report, onRestart }: ReportProps) {
-  const getScoreColor = (category: ParameterScore['category']) => {
-    switch (category) {
-      case 'On the Edge':
-        return 'text-yellow-600';
-      case 'Slight Problem':
-        return 'text-orange-500';
-      case 'Problem':
-        return 'text-red-500';
-      case 'Severe':
-        return 'text-red-700';
-      default:
-        return 'text-gray-700';
-    }
+export default function Report({ report, scores, onRestart }: ReportProps) {
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 75) return 'text-blue-600';
+    if (score >= 60) return 'text-yellow-600';
+    if (score >= 40) return 'text-orange-500';
+    return 'text-red-600';
   };
+
+  const getScoreCategory = (score: number) => {
+    if (score >= 90) return 'Excellent';
+    if (score >= 75) return 'Good';
+    if (score >= 60) return 'Fair';
+    if (score >= 40) return 'Needs Improvement';
+    return 'Critical';
+  };
+
+  const parameters: Parameter[] = [
+    'awareness',
+    'credibility',
+    'communication',
+    'retention',
+    'engagement',
+    'strategy'
+  ];
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -29,20 +40,20 @@ export default function Report({ report, onRestart }: ReportProps) {
       
       {/* Score Overview */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-        {report.scores.map(score => (
+        {parameters.map(parameter => (
           <div
-            key={score.parameter}
+            key={parameter}
             className="bg-white rounded-lg p-6 shadow-sm border"
           >
             <h3 className="text-lg font-semibold mb-2 capitalize">
-              {score.parameter.replace('_', ' ')}
+              {parameter}
             </h3>
             <div className="flex items-end justify-between">
               <div className="text-3xl font-bold">
-                {Math.round(score.score * 100)}%
+                {Math.round(scores[parameter])}%
               </div>
-              <div className={`text-sm font-medium ${getScoreColor(score.category)}`}>
-                {score.category}
+              <div className={`text-sm font-medium ${getScoreColor(scores[parameter])}`}>
+                {getScoreCategory(scores[parameter])}
               </div>
             </div>
           </div>
