@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Question, QuestionOption } from '@/lib/types';
+import { Question, Option } from '@/lib/types';
 
 export async function GET() {
   try {
@@ -59,8 +59,9 @@ export async function GET() {
         id: row.id,
         text: row.text,
         type: row.type,
-        relevantChannels: channels,
+        channels: channels,
         options: options.map((opt: any) => ({
+          id: opt.id,
           text: opt.text,
           weights: opt.weights
         }))
