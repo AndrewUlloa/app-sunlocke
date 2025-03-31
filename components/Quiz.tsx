@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { MarketingChannel, Question, QuizResponse } from '@/lib/types';
+import { MarketingChannel, Question, QuizResponse, QuestionResponse } from '@/lib/types';
 import QuestionBank from '@/lib/questionBank';
 import { ScoreCalculator } from '@/lib/scoring';
 
 interface QuizProps {
   questionBank: QuestionBank;
-  onComplete: (response: QuizResponse) => void;
+  onComplete: (response: Omit<QuizResponse, 'visitorInfo'>) => void;
 }
 
 export default function Quiz({ questionBank, onComplete }: QuizProps) {
@@ -15,19 +15,15 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
   const [selectedChannels, setSelectedChannels] = useState<MarketingChannel[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [responses, setResponses] = useState<{ questionId: string; selectedOption: number }[]>([]);
+  const [responses, setResponses] = useState<QuestionResponse[]>([]);
 
   const channels: MarketingChannel[] = [
-    'website',
-    'social_media',
-    'email',
-    'content_marketing',
-    'paid_advertising',
-    'seo',
-    'events',
-    'pr',
-    'direct_mail',
-    'referral'
+    'Website',
+    'Social Media',
+    'Email List',
+    'Events/Webinars',
+    'Paid Ads',
+    'Partnership/Referral'
   ];
 
   const handleChannelSelect = (channel: MarketingChannel) => {
@@ -51,25 +47,30 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
 
   const handleOptionSelect = (optionIndex: number) => {
     const currentQuestion = questions[currentQuestionIndex];
+    const selectedOption = currentQuestion.options[optionIndex];
     
     setResponses(prev => [
       ...prev,
-      { questionId: currentQuestion.id, selectedOption: optionIndex }
+      {
+        questionId: currentQuestion.id,
+        selectedOptionId: selectedOption.id,
+        questionText: currentQuestion.text,
+        selectedOptionText: selectedOption.text
+      }
     ]);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setStep('processing');
-      const scores = ScoreCalculator.calculateScores(questions, responses);
+      const scores = ScoreCalculator.calculateScores(questions, responses, selectedChannels);
       
-      const quizResponse: QuizResponse = {
-        id: crypto.randomUUID(),
-        userId: 'anonymous', // Replace with actual user ID if authentication is implemented
+      const quizResponse: Omit<QuizResponse, 'visitorInfo'> = {
+        id: Math.floor(Math.random() * 1000000), // Simple numeric ID generation
+        timestamp: new Date().toISOString(),
         selectedChannels,
         responses,
-        scores,
-        timestamp: new Date()
+        scores
       };
 
       onComplete(quizResponse);
@@ -91,7 +92,7 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
                   : 'bg-white text-gray-800'
               }`}
             >
-              {channel.replace('_', ' ').toUpperCase()}
+              {channel}
             </button>
           ))}
         </div>
@@ -128,7 +129,7 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
         <div className="space-y-4">
           {currentQuestion.options.map((option, index) => (
             <button
-              key={index}
+              key={option.id}
               onClick={() => handleOptionSelect(index)}
               className="w-full p-4 text-left border rounded-lg hover:bg-gray-50"
             >
