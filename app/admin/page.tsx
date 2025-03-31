@@ -49,34 +49,84 @@ const generateInsights = (scores: Record<Parameter, ParameterScore>, channels: M
     .filter(([_, score]) => score >= highestScore - 10)
     .map(([param]) => param);
   
-  return `Strong performance in ${strongestAreas.join(', ')}. Selected ${channels.length} marketing channels for implementation.`;
+  const channelSpecificInsights = channels.map(channel => {
+    switch(channel) {
+      case 'Email List':
+        return 'Email marketing shows potential for direct customer engagement';
+      case 'Events/Webinars':
+        return 'Events and webinars can strengthen brand presence';
+      case 'Paid Ads':
+        return 'Paid advertising can accelerate growth';
+      case 'Partnership/Referral':
+        return 'Partnerships can expand market reach';
+      case 'Social Media':
+        return 'Social media presence can boost engagement';
+      case 'Website':
+        return 'Website optimization can improve conversion';
+      default:
+        return '';
+    }
+  }).filter(Boolean);
+
+  return `Strong performance in ${strongestAreas.join(', ')}. Selected ${channels.length} marketing channels: ${channelSpecificInsights.join('. ')}`;
 };
 
 const generateRecommendations = (scores: Record<Parameter, ParameterScore>, channels: MarketingChannel[]): string[] => {
   const recommendations: string[] = [];
   
-  // Add channel-specific recommendations
+  // Channel-specific recommendations
   channels.forEach(channel => {
     switch(channel) {
       case 'Email List':
         recommendations.push('Implement automated email nurture campaigns');
+        recommendations.push('Segment email lists for targeted messaging');
         break;
-      case 'Social Media':
-        recommendations.push('Develop consistent social media content calendar');
-        break;
-      case 'Website':
-        recommendations.push('Create comprehensive content strategy');
+      case 'Events/Webinars':
+        recommendations.push('Create engaging virtual event series');
+        recommendations.push('Develop follow-up strategy for event attendees');
         break;
       case 'Paid Ads':
-        recommendations.push('Focus on technical SEO optimization');
+        recommendations.push('Optimize ad targeting and creative');
+        recommendations.push('Implement A/B testing for ad campaigns');
+        break;
+      case 'Partnership/Referral':
+        recommendations.push('Establish partner onboarding program');
+        recommendations.push('Create co-marketing opportunities');
+        break;
+      case 'Social Media':
+        recommendations.push('Develop consistent content calendar');
+        recommendations.push('Engage with audience through interactive content');
+        break;
+      case 'Website':
+        recommendations.push('Optimize website for conversions');
+        recommendations.push('Create valuable content resources');
         break;
     }
   });
 
-  // Add score-based recommendations
+  // Score-based recommendations
   Object.entries(scores).forEach(([param, score]) => {
     if (score < 70) {
-      recommendations.push(`Improve ${param} through targeted training and resources`);
+      switch(param as Parameter) {
+        case 'awareness':
+          recommendations.push('Increase brand visibility through targeted campaigns');
+          break;
+        case 'credibility':
+          recommendations.push('Build trust through customer testimonials and case studies');
+          break;
+        case 'communication':
+          recommendations.push('Improve messaging clarity and consistency');
+          break;
+        case 'retention':
+          recommendations.push('Develop customer loyalty program');
+          break;
+        case 'engagement':
+          recommendations.push('Create more interactive content and experiences');
+          break;
+        case 'strategy':
+          recommendations.push('Develop comprehensive marketing strategy document');
+          break;
+      }
     }
   });
 

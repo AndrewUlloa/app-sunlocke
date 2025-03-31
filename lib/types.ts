@@ -16,25 +16,25 @@ export type Parameter =
 
 export type ParameterScore = number;
 
-export interface QuestionOption {
-  id: string;
+export interface Question {
+  id: number;
   text: string;
-  weights: {
-    awareness: number;
-    credibility: number;
-    communication: number;
-    retention: number;
-    engagement: number;
-    strategy: number;
-  };
+  type: 'Baseline' | 'Combination-Specific' | 'Singular';
+  channels: MarketingChannel[];
+  options: Option[];
 }
 
-export interface Question {
-  id: string;
+export interface Option {
+  id: number;
   text: string;
-  type: 'baseline' | 'combination' | 'channel-specific';
-  options: QuestionOption[];
-  relevantChannels?: MarketingChannel[];
+  weights: Record<Parameter, number>;
+}
+
+export interface QuestionResponse {
+  questionId: number;
+  selectedOptionId: number;
+  questionText: string;
+  selectedOptionText: string;
 }
 
 export interface VisitorInfo {
@@ -44,33 +44,17 @@ export interface VisitorInfo {
   industry: string;
 }
 
-export interface Scores {
-  awareness: ParameterScore;
-  credibility: ParameterScore;
-  communication: ParameterScore;
-  retention: ParameterScore;
-  engagement: ParameterScore;
-  strategy: ParameterScore;
-}
-
 export interface Report {
   insights: string;
   recommendations: string[];
 }
 
-export interface QuestionResponse {
-  questionId: string;
-  questionText: string;
-  selectedOptionId: string;
-  selectedOptionText: string;
-}
-
 export interface QuizResponse {
-  id: string;
+  id: number;
+  timestamp: string;
   visitorInfo: VisitorInfo;
   selectedChannels: MarketingChannel[];
-  scores: Record<Parameter, ParameterScore>;
-  timestamp: string;
-  report: Report | null;
   responses: QuestionResponse[];
+  scores: Record<Parameter, ParameterScore>;
+  report?: Report;
 } 

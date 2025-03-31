@@ -1,17 +1,52 @@
-import { Question, Parameter, ParameterScore } from './types';
+import { Question, Parameter, ParameterScore, MarketingChannel } from './types';
 
 export class ScoreCalculator {
-  private static readonly CATEGORY_THRESHOLDS = {
-    'On the Edge': 0.75,
-    'Slight Problem': 0.5,
-    'Problem': 0.25,
-    'Severe': 0
+  private static readonly PARAMETER_WEIGHTS: Record<Parameter, number> = {
+    awareness: 1,
+    credibility: 1,
+    communication: 1,
+    retention: 1,
+    engagement: 1,
+    strategy: 1
+  };
+
+  private static readonly CHANNEL_PARAMETER_WEIGHTS: Partial<Record<MarketingChannel, Partial<Record<Parameter, number>>>> = {
+    'Email List': {
+      communication: 1.2,
+      retention: 1.1,
+      engagement: 1.1
+    },
+    'Events/Webinars': {
+      awareness: 1.2,
+      credibility: 1.1,
+      engagement: 1.2
+    },
+    'Paid Ads': {
+      awareness: 1.3,
+      engagement: 1.1
+    },
+    'Partnership/Referral': {
+      credibility: 1.3,
+      awareness: 1.1,
+      retention: 1.1
+    },
+    'Social Media': {
+      awareness: 1.2,
+      engagement: 1.3,
+      communication: 1.1
+    },
+    'Website': {
+      credibility: 1.2,
+      communication: 1.1,
+      strategy: 1.2
+    }
   };
 
   static calculateScores(
     questions: Question[],
-    responses: { questionId: string; selectedOption: number }[]
-  ): ParameterScore[] {
+    responses: { questionId: number; selectedOptionId: number }[],
+    selectedChannels: MarketingChannel[]
+  ): Record<Parameter, number> {
     // Initialize scores for each parameter
     const rawScores: Record<Parameter, number> = {
       awareness: 0,
@@ -22,40 +57,49 @@ export class ScoreCalculator {
       strategy: 0
     };
 
-    // Calculate raw scores
+    // Calculate raw scores from responses
     responses.forEach(response => {
       const question = questions.find(q => q.id === response.questionId);
       if (!question) return;
 
-      const selectedOption = question.options[response.selectedOption];
+      const selectedOption = question.options.find(opt => opt.id === response.selectedOptionId);
       if (!selectedOption) return;
 
+      // Apply base weights from the option
       Object.entries(selectedOption.weights).forEach(([parameter, weight]) => {
         rawScores[parameter as Parameter] += weight;
       });
+
+      // Apply channel-specific weights if the question is channel-specific
+      if (question.type === 'Combination-Specific' || question.type === 'Singular') {
+        const relevantChannels = question.channels;
+        const selectedRelevantChannels = selectedChannels.filter(ch => 
+          relevantChannels.includes(ch)
+        );
+
+        selectedRelevantChannels.forEach(channel => {
+          const channelWeights = this.CHANNEL_PARAMETER_WEIGHTS[channel];
+          if (channelWeights) {
+            Object.entries(channelWeights).forEach(([parameter, multiplier]) => {
+              rawScores[parameter as Parameter] *= multiplier;
+            });
+          }
+        });
+      }
     });
 
-    // Normalize scores and assign categories
-    return Object.entries(rawScores).map(([parameter, score]) => {
-      const normalizedScore = this.normalizeScore(score, responses.length);
-      return {
-        parameter: parameter as Parameter,
-        score: normalizedScore,
-        category: this.getScoreCategory(normalizedScore)
-      };
+    // Normalize scores to percentages (0-100)
+    const maxPossibleScore = questions.length * Math.max(
+      ...Object.values(this.PARAMETER_WEIGHTS)
+    );
+
+    const normalizedScores: Record<Parameter, number> = {} as Record<Parameter, number>;
+    Object.entries(rawScores).forEach(([parameter, score]) => {
+      normalizedScores[parameter as Parameter] = Math.round(
+        (score / maxPossibleScore) * 100
+      );
     });
-  }
 
-  private static normalizeScore(score: number, totalQuestions: number): number {
-    // Normalize to 0-1 range based on total possible score
-    const maxPossibleScore = totalQuestions * 1; // Assuming max weight per question is 1
-    return Math.max(0, Math.min(1, score / maxPossibleScore));
-  }
-
-  private static getScoreCategory(normalizedScore: number): ParameterScore['category'] {
-    if (normalizedScore >= this.CATEGORY_THRESHOLDS['On the Edge']) return 'On the Edge';
-    if (normalizedScore >= this.CATEGORY_THRESHOLDS['Slight Problem']) return 'Slight Problem';
-    if (normalizedScore >= this.CATEGORY_THRESHOLDS['Problem']) return 'Problem';
-    return 'Severe';
+    return normalizedScores;
   }
 } 

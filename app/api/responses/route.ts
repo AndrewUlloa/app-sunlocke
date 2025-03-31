@@ -3,7 +3,7 @@ import { QuizResponse, MarketingChannel, Parameter } from '@/lib/types';
 import { sendQuizCompletionEmail } from '@/lib/emailService';
 
 interface D1Row {
-  id: string;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -17,7 +17,7 @@ interface D1Row {
 }
 
 interface D1QuizResponse {
-  id: string;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -190,7 +190,7 @@ export async function GET(request: Request) {
 
     // Transform the responses into the expected format
     const transformedResponses: QuizResponse[] = responses.map(row => ({
-      id: row.id,
+      id: parseInt(row.id.toString(), 10),
       visitorInfo: {
         firstName: row.first_name,
         lastName: row.last_name,
@@ -204,7 +204,7 @@ export async function GET(request: Request) {
       report: row.insights ? {
         insights: row.insights,
         recommendations: JSON.parse(row.recommendations || '[]')
-      } : null
+      } : undefined
     }));
 
     console.log('Successfully processed responses:', { count: responses.length, total });
@@ -241,7 +241,10 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const quizResponse: QuizResponse = body.response;
-    const report: Report | undefined = body.report;
+
+    // Generate insights and recommendations
+    const insights = generateInsights(quizResponse.scores, quizResponse.selectedChannels);
+    const recommendations = generateRecommendations(quizResponse.scores, quizResponse.selectedChannels);
 
     // Store quiz response
     const responseQuery = `
@@ -286,40 +289,56 @@ export async function POST(request: Request) {
       throw new Error('Failed to store quiz response');
     }
 
-    // If there's a report, store it
-    if (report) {
-      const reportQuery = `
-        INSERT INTO reports (
-          quiz_response_id,
+    // Store report
+    const reportQuery = `
+      INSERT INTO reports (
+        quiz_response_id,
+        insights,
+        recommendations
+      ) VALUES (?, ?, ?)
+    `;
+
+    const reportResult = await fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sql: reportQuery,
+        params: [
+          quizResponse.id,
           insights,
-          recommendations
-        ) VALUES (?, ?, ?)
-      `;
+          JSON.stringify(recommendations)
+        ]
+      })
+    });
 
-      const reportResult = await fetch(`https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sql: reportQuery,
-          params: [
-            quizResponse.id,
-            report.insights,
-            JSON.stringify(report.recommendations)
-          ]
-        })
-      });
-
-      if (!reportResult.ok) {
-        const error = await reportResult.text();
-        console.error('Failed to store report:', error);
-        throw new Error('Failed to store report');
-      }
+    if (!reportResult.ok) {
+      const error = await reportResult.text();
+      console.error('Failed to store report:', error);
+      throw new Error('Failed to store report');
     }
 
-    return Response.json({ success: true });
+    // Send email notification
+    try {
+      const report = {
+        insights,
+        recommendations
+      };
+      await sendQuizCompletionEmail(quizResponse, report);
+    } catch (error) {
+      console.error('Failed to send email notification:', error);
+      // Don't throw here, we still want to return success for the quiz submission
+    }
+
+    return Response.json({ 
+      success: true,
+      report: {
+        insights,
+        recommendations
+      }
+    });
   } catch (error) {
     console.error('Error in POST /api/responses:', error);
     return Response.json(
@@ -327,4 +346,95 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// Helper functions
+function generateInsights(scores: Record<Parameter, number>, channels: MarketingChannel[]): string {
+  const highestScore = Math.max(...Object.values(scores));
+  const strongestAreas = Object.entries(scores)
+    .filter(([_, score]) => score >= highestScore - 10)
+    .map(([param]) => param);
+  
+  const channelSpecificInsights = channels.map(channel => {
+    switch(channel) {
+      case 'Email List':
+        return 'Email marketing shows potential for direct customer engagement';
+      case 'Events/Webinars':
+        return 'Events and webinars can strengthen brand presence';
+      case 'Paid Ads':
+        return 'Paid advertising can accelerate growth';
+      case 'Partnership/Referral':
+        return 'Partnerships can expand market reach';
+      case 'Social Media':
+        return 'Social media presence can boost engagement';
+      case 'Website':
+        return 'Website optimization can improve conversion';
+      default:
+        return '';
+    }
+  }).filter(Boolean);
+
+  return `Strong performance in ${strongestAreas.join(', ')}. Selected ${channels.length} marketing channels: ${channelSpecificInsights.join('. ')}`;
+}
+
+function generateRecommendations(scores: Record<Parameter, number>, channels: MarketingChannel[]): string[] {
+  const recommendations: string[] = [];
+  
+  // Channel-specific recommendations
+  channels.forEach(channel => {
+    switch(channel) {
+      case 'Email List':
+        recommendations.push('Implement automated email nurture campaigns');
+        recommendations.push('Segment email lists for targeted messaging');
+        break;
+      case 'Events/Webinars':
+        recommendations.push('Create engaging virtual event series');
+        recommendations.push('Develop follow-up strategy for event attendees');
+        break;
+      case 'Paid Ads':
+        recommendations.push('Optimize ad targeting and creative');
+        recommendations.push('Implement A/B testing for ad campaigns');
+        break;
+      case 'Partnership/Referral':
+        recommendations.push('Establish partner onboarding program');
+        recommendations.push('Create co-marketing opportunities');
+        break;
+      case 'Social Media':
+        recommendations.push('Develop consistent content calendar');
+        recommendations.push('Engage with audience through interactive content');
+        break;
+      case 'Website':
+        recommendations.push('Optimize website for conversions');
+        recommendations.push('Create valuable content resources');
+        break;
+    }
+  });
+
+  // Score-based recommendations
+  Object.entries(scores).forEach(([param, score]) => {
+    if (score < 70) {
+      switch(param as Parameter) {
+        case 'awareness':
+          recommendations.push('Increase brand visibility through targeted campaigns');
+          break;
+        case 'credibility':
+          recommendations.push('Build trust through customer testimonials and case studies');
+          break;
+        case 'communication':
+          recommendations.push('Improve messaging clarity and consistency');
+          break;
+        case 'retention':
+          recommendations.push('Develop customer loyalty program');
+          break;
+        case 'engagement':
+          recommendations.push('Create more interactive content and experiences');
+          break;
+        case 'strategy':
+          recommendations.push('Develop comprehensive marketing strategy document');
+          break;
+      }
+    }
+  });
+
+  return recommendations;
 } 
