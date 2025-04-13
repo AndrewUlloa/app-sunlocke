@@ -386,7 +386,8 @@ export function TranscriptionForm({
               </label>
             </motion.div>
 
-            {/* Selected Files List */}
+            {/* Selected Files List - COMMENTED OUT */}
+            {/*
             <AnimatePresence>
               {files.length > 0 && (
                 <motion.div
@@ -419,9 +420,11 @@ export function TranscriptionForm({
                 </motion.div>
               )}
             </AnimatePresence>
+            */}
           </div>
 
-          {/* Prompt Input */}
+          {/* Prompt Input - COMMENTED OUT */}
+          {/*
           <div className="w-full">
             <Label htmlFor="prompt" className="block text-[14px] mb-2 font-eudoxusSansMedium md:text-base">
               Prompt (Optional)
@@ -434,6 +437,7 @@ export function TranscriptionForm({
               className="w-full text-base"
             />
           </div>
+          */}
 
           {/* Transcribe Button */}
           <div className="w-full flex justify-center">
@@ -455,7 +459,8 @@ export function TranscriptionForm({
             </Button>
           </div>
 
-          {/* Results Section */}
+          {/* Results Section - COMMENTED OUT */}
+          {/*
           <AnimatePresence>
             {transcription && (
               <motion.div
@@ -496,6 +501,7 @@ export function TranscriptionForm({
               </motion.div>
             )}
           </AnimatePresence>
+          */}
         </CardContent>
       </Card>
     </div>

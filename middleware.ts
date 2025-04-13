@@ -105,7 +105,7 @@ export async function middleware(request: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession()
 
     // If user is not signed in and trying to access a protected route
-    if (!session && request.nextUrl.pathname !== "/") {
+    if (!session && request.nextUrl.pathname !== "/" && request.nextUrl.pathname !== "/quiz") {
       console.log("Middleware: No session, redirecting to /")
       return NextResponse.redirect(new URL('/', request.url))
     }
