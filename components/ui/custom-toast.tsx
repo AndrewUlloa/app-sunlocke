@@ -91,7 +91,7 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
               <div className="flex flex-row items-center justify-start gap-[10px] min-w-[31ch]">
                 {/* Icon button */}
                 <div
-                  className="flex items-center justify-center bg-transparent border-0 cursor-pointer rounded-full antialiased"
+                  className="flex items-center justify-center bg-transparent border-0 cursor-default antialiased"
                   aria-label="Toast status"
                 >
                   {isLoading ? (
@@ -103,18 +103,26 @@ export function CustomToast({ description, variant = 'default', ...props }: Cust
                 {/* Text frame */}
                 <div className="flex flex-col gap-[8px]">
                   <p
-                    className="text-[13px] font-eudoxusSansBold text-[#fbfffc]"
+                    className="text-[13px] font-eudoxusSansBold text-[#fbfffc] cursor-default select-none"
                     style={{
                       textShadow: "2px 1px 3px #00000050",
+                      ...(variant !== 'error' && {
+                        WebkitUserSelect: "none",
+                        userSelect: "none",
+                      }),
                     }}
                   >
                     {props.message}
                   </p>
                   {description && (
                     <p
-                      className="text-[13px] font-eudoxusSansMedium text-[#fbfffc] leading-[1.25]"
+                      className="text-[13px] font-eudoxusSansMedium text-[#fbfffc] leading-[1.25] cursor-default select-none"
                       style={{
                         textShadow: "2px 1px 3px #00000070",
+                        ...(variant !== 'error' && {
+                          WebkitUserSelect: "none",
+                          userSelect: "none",
+                        }),
                       }}
                     >
                       {description}
