@@ -2,7 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient, toast } from "@/lib"
+import { createClient } from "@/lib/client"
+import { toast } from "@/lib/toast"
 
 export default function AuthCallbackPage() {
   const router = useRouter()
