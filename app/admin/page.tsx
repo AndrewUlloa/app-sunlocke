@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { QuizResponse, MarketingChannel, Parameter, ParameterScore } from '@/lib/types';
-import { toast } from '@/lib/toast';
+import { toast } from '../../lib/toast';
 interface PaginationInfo {
   total: number;
   page: number;
