@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:network": "node scripts/dev.js",
-    "build": "next build",
+    "build": "npm install --force && next build",
     "start": "next start",
     "lint": "next lint",
     "import-data": "node scripts/import-data.js"
