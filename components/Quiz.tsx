@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { MarketingChannel, Question, QuizResponse, QuestionResponse } from '@/lib/types';
 import QuestionBank from '@/lib/questionBank';
 import { ScoreCalculator } from '@/lib/scoring';
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 
 interface QuizProps {
   questionBank: QuestionBank;
@@ -96,12 +98,15 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
             </button>
           ))}
         </div>
-        <button
-          onClick={handleChannelSubmit}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Continue to Quiz
-        </button>
+        <div className="w-full flex justify-center">
+          <Button
+            onClick={handleChannelSubmit}
+            disabled={selectedChannels.length === 0}
+          >
+            <ArrowRight className="mr-2 h-4 w-4" />
+            Continue to Quiz
+          </Button>
+        </div>
       </div>
     );
   }
@@ -128,13 +133,15 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
         
         <div className="space-y-4">
           {currentQuestion.options.map((option, index) => (
-            <button
+            <Button
               key={option.id}
               onClick={() => handleOptionSelect(index)}
-              className="w-full p-4 text-left border rounded-lg hover:bg-gray-50"
+              variant="outline"
+              className="w-full p-6 h-auto text-left justify-start font-normal"
             >
+              <CheckCircle className="mr-2 h-4 w-4 flex-shrink-0" />
               {option.text}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -144,7 +151,7 @@ export default function Quiz({ questionBank, onComplete }: QuizProps) {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+        <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
         <p className="text-lg">Processing your responses...</p>
       </div>
     </div>

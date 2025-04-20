@@ -44,8 +44,8 @@ export default function AuthCallbackPage() {
         
         // Show success message
         toast.success({
-          message: "Successfully signed in",
-          description: "Welcome back!"
+          message: "Authentication successful",
+          description: "Redirecting you to your workspace..."
         })
 
         // Use a more direct navigation approach

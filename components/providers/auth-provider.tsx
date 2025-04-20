@@ -15,7 +15,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialSessionChecked = useRef(false)
 
   const showWelcomeToast = useCallback(async () => {
-    if (hasShownWelcomeToast.current) return
+    if (hasShownWelcomeToast.current) {
+      console.log("Welcome toast already shown, skipping...")
+      return
+    }
+
+    console.log("Showing welcome toast...")
+    hasShownWelcomeToast.current = true  // Set flag immediately to prevent race conditions
 
     try {
       const { data: { user } } = await supabase.current.auth.getUser()
@@ -29,18 +35,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           message: "Welcome back!",
           description: `Great to see you again, ${name}!`
         })
-        hasShownWelcomeToast.current = true
       }
     } catch (error) {
       console.error("Error showing welcome toast:", error)
-      hasShownWelcomeToast.current = false
+      hasShownWelcomeToast.current = false  // Reset only on error
     }
   }, [])
 
   const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
     console.log("Auth state changed:", event, "Session:", session ? "exists" : "none")
 
-    if (event === 'SIGNED_IN') {
+    if (event === 'SIGNED_IN' && !hasShownWelcomeToast.current) {
       console.log("Handling SIGNED_IN event...")
       showWelcomeToast()
     } else if (event === 'SIGNED_OUT') {
@@ -79,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push("/transcribe")
       } else if (session && !hasShownWelcomeToast.current && pathname === "/transcribe") {
         // Only show welcome toast on transcribe page for session restores
+        console.log("Showing welcome toast from session restore...")
         showWelcomeToast()
       }
     }

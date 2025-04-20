@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { VisitorInfo } from '@/lib/types';
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface VisitorFormProps {
   onSubmit: (visitorInfo: VisitorInfo) => void;
@@ -155,12 +157,12 @@ export default function VisitorForm({ onSubmit }: VisitorFormProps) {
           )}
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Continue to Quiz
-        </button>
+        <div className="w-full flex justify-center">
+          <Button type="submit">
+            <ArrowRight className="mr-2 h-4 w-4" />
+            Continue to Quiz
+          </Button>
+        </div>
       </form>
     </div>
   );
