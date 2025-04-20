@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Quiz from '../../components/Quiz';
-import Report from '../../components/Report';
-import VisitorForm from '../../components/VisitorForm';
-import QuestionBank from '../../lib/questionBank';
-import { ReportGenerator } from '../../lib/reportGenerator';
-import { QuizResponse, Report as ReportType, VisitorInfo, Parameter } from '../../lib/types';
-import { Card, CardContent } from "@/components/ui/card";
+import Quiz from '@/components/Quiz';
+import Report from '@/components/Report';
+import VisitorForm from '@/components/VisitorForm';
+import { QuizResponse, Report as ReportType, VisitorInfo, Parameter } from '@/lib';
+import QuestionBank from '@/lib/questionBank';
+import { ReportGenerator } from '@/lib/reportGenerator';
+import { Card, CardContent, Header } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { Header } from '@/components/ui/header';
 import { Loader2 } from 'lucide-react';
 
 const D1_DATABASE_ID = process.env.NEXT_PUBLIC_D1_DATABASE_ID || '5d861285-afcf-488f-beaa-be3dc0ed15ea';
