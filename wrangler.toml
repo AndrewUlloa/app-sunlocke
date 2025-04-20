@@ -7,5 +7,5 @@ command = "npm run build"
 [site]
 bucket = ".next"
 
-[functions]
-directory = "functions"
+# Simple string property, not a section
+pages_build_output_dir = ".next"
