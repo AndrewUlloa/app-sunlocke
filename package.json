@@ -56,5 +56,13 @@
   },
   "overrides": {
     "@ungap/structured-clone": "*"
+  },
+  "resolutions": {
+    "@ungap/structured-clone": "1.0.0"
+  },
+  "dependenciesMeta": {
+    "@ungap/structured-clone": {
+      "optional": "true"
+    }
   }
 }
