@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { QuizResponse, MarketingChannel, Parameter, ParameterScore, toast } from '@/lib';
-
+import { QuizResponse, MarketingChannel, Parameter, ParameterScore } from '@/lib/types';
+import { toast } from '@/lib/toast';
 interface PaginationInfo {
   total: number;
   page: number;
